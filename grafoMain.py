@@ -5,7 +5,6 @@
 
 
 vertices = []
-listaDeArestas = []
 
 def main():
 
@@ -46,9 +45,16 @@ def main():
 
     criarVertices(qtVertices)
 
+    listaDeArestas = novaListaDeArestas() #não faz nada, mas é bom constar
+    listaDeAdjacencias = novaListaDeAdjacencias(qtVertices)
+
+    print(vertices)
+    print(listaDeAdjacencias)
+
     print("*** Definição de arestas ***")
     cancelou = False
     while(cancelou == False):
+        print()
         print("A qualquer ponto, para encerrar a criação de arestas, digite \"sair\"")
         strEntrada = ""
         while(cancelou == False and strEntrada.upper() not in vertices):
@@ -65,27 +71,46 @@ def main():
             if(strSaida.upper() == "SAIR"):
                 cancelou = True
         if(cancelou == False):
-            adicionarAresta(strEntrada, strSaida)
+            adicionarAresta(strEntrada, strSaida, listaDeArestas, listaDeAdjacencias)
 
     #mostrar as representações
     mostraVertices()
-    mostraListaDeArestas()
+    mostraListaDeArestas(listaDeArestas)
+    mostraListaDeAdjacencias(listaDeAdjacencias)
 
 def criarVertices(quantidade: int):
     for i in range(quantidade):
         vertices.append("V"+str(i+1))
 
-def adicionarAresta(entrada: str, saida: str):
-    nomeDaAresta = "E" + str(len(listaDeArestas) + 1)
-    listaDeArestas.append((nomeDaAresta, entrada.upper(), saida.upper()))
+def novaListaDeArestas():
+    return []
+
+def novaListaDeAdjacencias(quantidade: int):
+    return [ [] for i in range(quantidade)]
+
+def adicionarAresta(entrada: str, saida: str, listaAr, listaAd):
+    nomeDaAresta = "E" + str(len(listaAr) + 1)
+
+    #adicionar na lista de arestas
+    listaAr.append((nomeDaAresta, entrada.upper(), saida.upper()))
+
+    #adicionar na lista de adjacências
+    listaAd[vertices.index(entrada.upper())].append(saida.upper())
 
 def mostraVertices():
+    print()
     print("Vértices:", vertices)
 
-def mostraListaDeArestas():
-    print("Arestas:")
-    for aresta in listaDeArestas:
+def mostraListaDeArestas(lista):
+    print()
+    print("Lista de arestas:")
+    for aresta in lista:
         print(aresta)
+
+def mostraListaDeAdjacencias(lista):
+    print()
+    for i in range(len(vertices)):
+        print(vertices[i]+ ": " + str(lista[i]))
 
 if __name__ == "__main__":
     main()
