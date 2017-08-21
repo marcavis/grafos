@@ -45,11 +45,10 @@ def main():
 
     criarVertices(qtVertices)
 
-    listaDeArestas = novaListaDeArestas() #não faz nada, mas é bom constar
+    listaDeArestas = novaListaDeArestas()
     listaDeAdjacencias = novaListaDeAdjacencias(qtVertices)
-
-    print(vertices)
-    print(listaDeAdjacencias)
+    matrizDeAdjacencias = novaMatrizDeAdjacencias(qtVertices)
+    matrizDeIncidencias = novaMatrizDeIncidencias()
 
     print("*** Definição de arestas ***")
     cancelou = False
@@ -71,12 +70,15 @@ def main():
             if(strSaida.upper() == "SAIR"):
                 cancelou = True
         if(cancelou == False):
-            adicionarAresta(strEntrada, strSaida, listaDeArestas, listaDeAdjacencias)
+            adicionarAresta(strEntrada, strSaida, listaDeArestas,
+            listaDeAdjacencias, matrizDeAdjacencias, matrizDeIncidencias)
 
     #mostrar as representações
     mostraVertices()
     mostraListaDeArestas(listaDeArestas)
     mostraListaDeAdjacencias(listaDeAdjacencias)
+    mostraMatrizDeAdjacencias(matrizDeAdjacencias)
+    mostraMatrizDeIncidencias(matrizDeIncidencias)
 
 def criarVertices(quantidade: int):
     for i in range(quantidade):
@@ -88,14 +90,34 @@ def novaListaDeArestas():
 def novaListaDeAdjacencias(quantidade: int):
     return [ [] for i in range(quantidade)]
 
-def adicionarAresta(entrada: str, saida: str, listaAr, listaAd):
+def novaMatrizDeAdjacencias(quantidade: int):
+    #retorna uma matriz i x i onde i é a qtde. vértices
+    return [ [0]*quantidade for i in range(quantidade) ]
+
+def novaMatrizDeIncidencias():
+    return []
+
+def adicionarAresta(entrada: str, saida: str, listaAr, listaAd, matrizA, matrizI):
     nomeDaAresta = "E" + str(len(listaAr) + 1)
 
     #adicionar na lista de arestas
-    listaAr.append((nomeDaAresta, entrada.upper(), saida.upper()))
+    listaAr.append((entrada.upper(), saida.upper()))
 
     #adicionar na lista de adjacências
     listaAd[vertices.index(entrada.upper())].append(saida.upper())
+
+    i = vertices.index(entrada.upper())
+    j = vertices.index(saida.upper())
+
+    #adicionar na matriz de adjacências
+    matrizA[i][j] += 1
+    matrizA[j][i] += 1
+
+    #adicionar na lista de incidências
+    colunaNova = [0] * len(vertices)
+    colunaNova[i] += 1
+    colunaNova[j] += 1
+    matrizI.append(colunaNova)
 
 def mostraVertices():
     print()
@@ -109,8 +131,35 @@ def mostraListaDeArestas(lista):
 
 def mostraListaDeAdjacencias(lista):
     print()
+    print("Lista de adjacências:")
     for i in range(len(vertices)):
         print(vertices[i]+ ": " + str(lista[i]))
+
+def mostraMatrizDeAdjacencias(matriz):
+    print()
+    print("Matriz de adjacências:")
+    cabecalho = "*****"
+    for w in range(len(vertices)):
+        cabecalho += " " + '{:>4}'.format(vertices[w])
+    print(cabecalho)
+    for v in range(len(vertices)):
+        print('{:>4}'.format(vertices[v]) + "|", end='')
+        for w in range(len(vertices)):
+            print (" " + '{:>4}'.format(matriz[v][w]), end='')
+        print()
+
+def mostraMatrizDeIncidencias(matriz):
+    print()
+    print("Matriz de incidências:")
+    cabecalho = "*****"
+    for w in range(len(matriz)):
+        cabecalho += " " + '{:>4}'.format("E" + str(w+1))
+    print(cabecalho)
+    for v in range(len(vertices)):
+        print('{:>4}'.format(vertices[v]) + "|", end='')
+        for w in range(len(matriz)):
+            print (" " + '{:>4}'.format(matriz[w][v]), end='')
+        print()
 
 if __name__ == "__main__":
     main()
