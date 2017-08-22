@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #trabalho 1 - representação de grafos
 #Caio Silveira Batista, Marcos Avila Isidoro
-
+import random
 
 vertices = []
 
@@ -51,27 +51,51 @@ def main():
     matrizDeIncidencias = novaMatrizDeIncidencias()
 
     print("*** Definição de arestas ***")
-    cancelou = False
-    while(cancelou == False):
-        print()
-        print("A qualquer ponto, para encerrar a criação de arestas, digite \"sair\"")
-        strEntrada = ""
-        while(cancelou == False and strEntrada.upper() not in vertices):
-            print("Qual o vértice de entrada?")
-            print("Vértices permitidos: do V1 ao V" + str(qtVertices))
-            strEntrada = input()
-            if(strEntrada.upper() == "SAIR"):
-                cancelou = True
-        strSaida = ""
-        while(cancelou == False and strSaida.upper() not in vertices):
-            print("Qual o vértice de saída?")
-            print("Vértices permitidos: do V1 ao V" + str(qtVertices))
-            strSaida = input()
-            if(strSaida.upper() == "SAIR"):
-                cancelou = True
-        if(cancelou == False):
-            adicionarAresta(strEntrada, strSaida, listaDeArestas,
-            listaDeAdjacencias, matrizDeAdjacencias, matrizDeIncidencias)
+
+    seDefineArestas = ""
+    while(seDefineArestas not in ["1", "2"]):
+        print("Deseja escolher arestas, ou quer que o programa crie-as aleatoriamente?")
+        print("1 - Definir manualmente")
+        print("2 - Criar aleatoriamente")
+        seDefineArestas = input()
+
+    if(seDefineArestas == "1"):
+        cancelou = False
+        while(cancelou == False):
+            print()
+            print("A qualquer ponto, para encerrar a criação de arestas, digite \"sair\"")
+            strEntrada = ""
+            while(cancelou == False and strEntrada.upper() not in vertices):
+                print("Qual o vértice de entrada?")
+                print("Vértices permitidos: do V1 ao V" + str(qtVertices))
+                strEntrada = input()
+                if(strEntrada.upper() == "SAIR"):
+                    cancelou = True
+            strSaida = ""
+            while(cancelou == False and strSaida.upper() not in vertices):
+                print("Qual o vértice de saída?")
+                print("Vértices permitidos: do V1 ao V" + str(qtVertices))
+                strSaida = input()
+                if(strSaida.upper() == "SAIR"):
+                    cancelou = True
+            if(cancelou == False):
+                adicionarAresta(strEntrada, strSaida, listaDeArestas,
+                listaDeAdjacencias, matrizDeAdjacencias, matrizDeIncidencias)
+    else:
+        strQtArestasAleatorias = ""
+        qtArestasAleatorias = 0
+        while(qtArestasAleatorias <= 0):
+            print("Quantas arestas serão criadas?")
+            print("Escolha um valor maior que 0")
+            strQtArestasAleatorias = input()
+            try:
+                qtArestasAleatorias = int(strQtArestasAleatorias)
+            except ValueError:
+                qtArestasAleatorias = 0
+        for i in range(qtArestasAleatorias):
+            adicionarAresta(random.choice(vertices), random.choice(vertices),
+            listaDeArestas, listaDeAdjacencias,
+            matrizDeAdjacencias, matrizDeIncidencias)
 
     #mostrar as representações
     mostraVertices()
@@ -79,6 +103,11 @@ def main():
     mostraListaDeAdjacencias(listaDeAdjacencias)
     mostraMatrizDeAdjacencias(matrizDeAdjacencias)
     mostraMatrizDeIncidencias(matrizDeIncidencias)
+    saida = open('saida.dot', 'w')
+    saida.write(paraGraphviz(vertices, listaDeArestas))
+    saida.close()
+    print("Uma representação do grafo para uso do programa")
+    print("dot do pacote graphviz foi salva em saida.dot")
 
 def criarVertices(quantidade: int):
     for i in range(quantidade):
@@ -105,12 +134,15 @@ def adicionarAresta(entrada: str, saida: str, listaAr, listaAd, matrizA, matrizI
 
     #adicionar na lista de adjacências
     listaAd[vertices.index(entrada.upper())].append(saida.upper())
+    #se bidirecional, também fazer:
+    listaAd[vertices.index(saida.upper())].append(entrada.upper())
 
     i = vertices.index(entrada.upper())
     j = vertices.index(saida.upper())
 
     #adicionar na matriz de adjacências
     matrizA[i][j] += 1
+    #se bidirecional, também fazer:
     matrizA[j][i] += 1
 
     #adicionar na lista de incidências
@@ -160,6 +192,20 @@ def mostraMatrizDeIncidencias(matriz):
         for w in range(len(matriz)):
             print (" " + '{:>4}'.format(matriz[w][v]), end='')
         print()
+
+def paraGraphviz(listaDeVertices, listaDeArestas):
+    saida = "graph \"grafo\" {\nnode [width=1.0,height=1.0];\n"
+    for v in range(len(listaDeVertices)):
+        saida += "N" + str(v+1) + " [label=\"" + listaDeVertices[v]
+        saida += "\",fontsize=24];\n"
+    for a in range(len(listaDeArestas)):
+        posVerticeA = listaDeVertices.index(listaDeArestas[a][0])
+        posVerticeB = listaDeVertices.index(listaDeArestas[a][1])
+        saida += "N" + str(posVerticeA + 1) + " -- "
+        saida += "N" + str(posVerticeB + 1) + " "
+        saida += "[weight=1,style=\"setlinewidth(2.0)\"];\n"
+    saida += "}"
+    return saida
 
 if __name__ == "__main__":
     main()
