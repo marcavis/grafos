@@ -78,9 +78,25 @@ def main():
                 strSaida = input()
                 if(strSaida.upper() == "SAIR"):
                     cancelou = True
+            strValor = ""
+            if valorado:
+                valor = 0 #será definido pelo usuário
+            else:
+                valor = 1
+            while(cancelou == False and valor <= 0 and valorado):
+                print("Qual o valor da aresta?")
+                print("Valor deve ser um número inteiro, maior que zero")
+                strValor = input()
+                if(strValor.upper() == "SAIR"):
+                    cancelou = True
+                try:
+                    valor = int(strValor)
+                except ValueError:
+                    valor = 0
             if(cancelou == False):
                 adicionarAresta(strEntrada, strSaida, listaDeArestas,
-                listaDeAdjacencias, matrizDeAdjacencias, matrizDeIncidencias)
+                listaDeAdjacencias, matrizDeAdjacencias, matrizDeIncidencias,
+                orientado, valorado, valor)
     else:
         strQtArestasAleatorias = ""
         qtArestasAleatorias = 0
@@ -93,18 +109,23 @@ def main():
             except ValueError:
                 qtArestasAleatorias = 0
         for i in range(qtArestasAleatorias):
+            if valorado:
+                valor = random.choice(range(1,11))
+            else:
+                valor = 1
             adicionarAresta(random.choice(vertices), random.choice(vertices),
             listaDeArestas, listaDeAdjacencias,
-            matrizDeAdjacencias, matrizDeIncidencias)
+            matrizDeAdjacencias, matrizDeIncidencias,
+            orientado, valorado, valor)
 
     #mostrar as representações
     mostraVertices()
-    mostraListaDeArestas(listaDeArestas)
+    mostraListaDeArestas(listaDeArestas, orientado)
     mostraListaDeAdjacencias(listaDeAdjacencias)
     mostraMatrizDeAdjacencias(matrizDeAdjacencias)
     mostraMatrizDeIncidencias(matrizDeIncidencias)
     saida = open('saida.dot', 'w')
-    saida.write(paraGraphviz(vertices, listaDeArestas))
+    saida.write(paraGraphviz(vertices, listaDeArestas, orientado, valorado))
     saida.close()
     print("Uma representação do grafo para uso do programa")
     print("dot do pacote graphviz foi salva em saida.dot")
@@ -126,40 +147,61 @@ def novaMatrizDeAdjacencias(quantidade: int):
 def novaMatrizDeIncidencias():
     return []
 
-def adicionarAresta(entrada: str, saida: str, listaAr, listaAd, matrizA, matrizI):
+def adicionarAresta(entrada: str, saida: str, listaAr, listaAd,
+matrizA, matrizI, orientado: bool, valorado: bool, valor: int):
     nomeDaAresta = "E" + str(len(listaAr) + 1)
 
     #adicionar na lista de arestas
-    listaAr.append((entrada.upper(), saida.upper()))
+    if not valorado:
+        listaAr.append((entrada.upper(), saida.upper()))
+    else:
+        listaAr.append((entrada.upper(), saida.upper(), valor))
 
-    #adicionar na lista de adjacências
-    listaAd[vertices.index(entrada.upper())].append(saida.upper())
-    #se bidirecional, também fazer:
-    listaAd[vertices.index(saida.upper())].append(entrada.upper())
-
+    #encontrar os vértices digitados na lista de vértices,
+    #agilizando as próximas representações
     i = vertices.index(entrada.upper())
     j = vertices.index(saida.upper())
 
+    #adicionar na lista de adjacências
+    if not valorado:
+        listaAd[i].append([saida.upper()])
+        if not orientado:
+            listaAd[j].append([entrada.upper()])
+    else:
+        listaAd[i].append([saida.upper(), valor])
+        if not orientado:
+            listaAd[j].append([entrada.upper(), valor])
+
     #adicionar na matriz de adjacências
-    matrizA[i][j] += 1
-    #se bidirecional, também fazer:
-    matrizA[j][i] += 1
+    matrizA[i][j] += 1 * valor
+    if not orientado:
+        matrizA[j][i] += 1 * valor
 
     #adicionar na lista de incidências
     colunaNova = [0] * len(vertices)
-    colunaNova[i] += 1
-    colunaNova[j] += 1
+    colunaNova[i] += 1 * valor
+    if not orientado:
+        colunaNova[j] += 1 * valor
+    else:
+        #não está claro o que acontece com loops em dígrafos, mas como
+        #a matriz de incidência se preocupa mais com caminhos, podemos deixar tudo 0
+        #na coluna
+        colunaNova[j] -= 1 * valor
     matrizI.append(colunaNova)
 
 def mostraVertices():
     print()
     print("Vértices:", vertices)
 
-def mostraListaDeArestas(lista):
+def mostraListaDeArestas(lista, orientado: bool):
     print()
     print("Lista de arestas:")
     for aresta in lista:
-        print(aresta)
+        if orientado:
+            print(aresta)
+        else:
+            print(str(aresta).replace('(','{').replace(')','}'))
+
 
 def mostraListaDeAdjacencias(lista):
     print()
@@ -193,17 +235,27 @@ def mostraMatrizDeIncidencias(matriz):
             print (" " + '{:>4}'.format(matriz[w][v]), end='')
         print()
 
-def paraGraphviz(listaDeVertices, listaDeArestas):
-    saida = "graph \"grafo\" {\nnode [width=1.0,height=1.0];\n"
+def paraGraphviz(listaDeVertices, listaDeArestas, orientado, valorado):
+    if orientado:
+        saida = "digraph "
+        seta = " -> "
+    else:
+        saida = "graph "
+        seta = " -- "
+    saida += "\"grafo\" {\nnode [width=1.0,height=1.0];\n"
     for v in range(len(listaDeVertices)):
         saida += "N" + str(v+1) + " [label=\"" + listaDeVertices[v]
         saida += "\",fontsize=24];\n"
     for a in range(len(listaDeArestas)):
         posVerticeA = listaDeVertices.index(listaDeArestas[a][0])
         posVerticeB = listaDeVertices.index(listaDeArestas[a][1])
-        saida += "N" + str(posVerticeA + 1) + " -- "
-        saida += "N" + str(posVerticeB + 1) + " "
-        saida += "[weight=1,style=\"setlinewidth(2.0)\"];\n"
+        if valorado:
+            valorAresta = listaDeArestas[a][2]
+        saida += "N" + str(posVerticeA + 1) + seta
+        saida += "N" + str(posVerticeB + 1) + " ["
+        if valorado:
+            saida += "label=" + str(valorAresta) + ","
+        saida += "weight=1,style=\"setlinewidth(2.0)\",fontsize=20];\n"
     saida += "}"
     return saida
 
