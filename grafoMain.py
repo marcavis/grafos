@@ -4,9 +4,11 @@
 #Caio Silveira Batista, Marcos Avila Isidoro
 import random
 
-vertices = []
+
 
 def main():
+
+    vertices = []
 
     seOrientado = ""
     while(seOrientado not in ["1", "2"]):
@@ -43,7 +45,7 @@ def main():
         except ValueError:
             qtVertices = 0
 
-    criarVertices(qtVertices)
+    criarVertices(vertices, qtVertices)
 
     listaDeArestas = novaListaDeArestas()
     listaDeAdjacencias = novaListaDeAdjacencias(qtVertices)
@@ -94,7 +96,7 @@ def main():
                 except ValueError:
                     valor = 0
             if(cancelou == False):
-                adicionarAresta(strEntrada, strSaida, listaDeArestas,
+                adicionarAresta(vertices, strEntrada, strSaida, listaDeArestas,
                 listaDeAdjacencias, matrizDeAdjacencias, matrizDeIncidencias,
                 orientado, valorado, valor)
     else:
@@ -113,24 +115,24 @@ def main():
                 valor = random.choice(range(1,11))
             else:
                 valor = 1
-            adicionarAresta(random.choice(vertices), random.choice(vertices),
+            adicionarAresta(vertices, random.choice(vertices), random.choice(vertices),
             listaDeArestas, listaDeAdjacencias,
             matrizDeAdjacencias, matrizDeIncidencias,
             orientado, valorado, valor)
 
     #mostrar as representações
-    mostraVertices()
+    mostraVertices(vertices)
     mostraListaDeArestas(listaDeArestas, orientado)
-    mostraListaDeAdjacencias(listaDeAdjacencias)
-    mostraMatrizDeAdjacencias(matrizDeAdjacencias)
-    mostraMatrizDeIncidencias(matrizDeIncidencias)
+    mostraListaDeAdjacencias(vertices, listaDeAdjacencias)
+    mostraMatrizDeAdjacencias(vertices, matrizDeAdjacencias)
+    mostraMatrizDeIncidencias(vertices, matrizDeIncidencias)
     saida = open('saida.dot', 'w')
     saida.write(paraGraphviz(vertices, listaDeArestas, orientado, valorado))
     saida.close()
     print("Uma representação do grafo para uso do programa")
     print("dot do pacote graphviz foi salva em saida.dot")
 
-def criarVertices(quantidade: int):
+def criarVertices(vertices, quantidade: int):
     for i in range(quantidade):
         vertices.append("V"+str(i+1))
 
@@ -147,7 +149,7 @@ def novaMatrizDeAdjacencias(quantidade: int):
 def novaMatrizDeIncidencias():
     return []
 
-def adicionarAresta(entrada: str, saida: str, listaAr, listaAd,
+def adicionarAresta(vertices, entrada: str, saida: str, listaAr, listaAd,
 matrizA, matrizI, orientado: bool, valorado: bool, valor: int):
     nomeDaAresta = "E" + str(len(listaAr) + 1)
 
@@ -189,7 +191,7 @@ matrizA, matrizI, orientado: bool, valorado: bool, valor: int):
         colunaNova[j] -= 1 * valor
     matrizI.append(colunaNova)
 
-def mostraVertices():
+def mostraVertices(vertices):
     print()
     print("Vértices:", vertices)
 
@@ -203,13 +205,13 @@ def mostraListaDeArestas(lista, orientado: bool):
             print(str(aresta).replace('(','{').replace(')','}'))
 
 
-def mostraListaDeAdjacencias(lista):
+def mostraListaDeAdjacencias(vertices, lista):
     print()
     print("Lista de adjacências:")
     for i in range(len(vertices)):
         print(vertices[i]+ ": " + str(lista[i]))
 
-def mostraMatrizDeAdjacencias(matriz):
+def mostraMatrizDeAdjacencias(vertices, matriz):
     print()
     print("Matriz de adjacências:")
     cabecalho = "*****"
@@ -222,7 +224,7 @@ def mostraMatrizDeAdjacencias(matriz):
             print (" " + '{:>4}'.format(matriz[v][w]), end='')
         print()
 
-def mostraMatrizDeIncidencias(matriz):
+def mostraMatrizDeIncidencias(vertices, matriz):
     print()
     print("Matriz de incidências:")
     cabecalho = "*****"
