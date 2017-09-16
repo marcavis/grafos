@@ -71,7 +71,8 @@ class Grafo():
         print()
         print("Lista de adjacências:")
         for i in range(len(self.vertices)):
-            print(self.vertices[i]+ ": " + str(self.listaDeAdjacencias[i]))
+            resto = [(self.vertices[j[0]], j[1]) for j in self.listaDeAdjacencias[i]]
+            print(self.vertices[i]+ ": " + str(resto))
 
     def mostraMatrizDeAdjacencias(self):
         print()
