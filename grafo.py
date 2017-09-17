@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 #trabalho 1 - representação de grafos
 #Caio Silveira Batista, Marcos Avila Isidoro
-import random
+import random, sys
 
 
 class Grafo():
@@ -15,7 +15,7 @@ class Grafo():
     orientado = False
     valorado = False
 
-    def __init__(self, orientado, valorado):
+    def __init__(self, orientado=False, valorado=False):
         self.orientado = orientado
         self.valorado = valorado
 
@@ -112,14 +112,35 @@ class Grafo():
             saida += "N" + str(v+1) + " [label=\"" + self.vertices[v]
             saida += "\",fontsize=24];\n"
         for a in range(len(self.arestas)):
-            posVerticeA = self.vertices.index(self.arestas[a][0])
-            posVerticeB = self.vertices.index(self.arestas[a][1])
-            if valorado:
-                valorAresta = self.aArestas[a][2]
-            saida += "N" + str(posVerticeA + 1) + seta
-            saida += "N" + str(posVerticeB + 1) + " ["
-            if valorado:
-                saida += "label=" + str(valorAresta) + ","
+            saida += "N" + str(self.arestas[a][1] + 1) + seta #origem
+            saida += "N" + str(self.arestas[a][2] + 1) + " [" #destino
+            if self.valorado:
+                saida += "label=" + str(self.arestas[a][3]) + ","
             saida += "weight=1,style=\"setlinewidth(2.0)\",fontsize=20];\n"
         saida += "}"
         return saida
+
+def dijkstra(grafo: Grafo, origem):
+    distancias = []
+    precursores = []
+    for v in range(len(grafo.vertices)):
+        if v == origem:
+            distancias.append(0)
+            precursores.append(None)
+        else:
+            distancias.append(sys.maxsize)
+            precursores.append(None)
+    fila = [origem]
+
+    while len(fila) > 0:
+        v = fila.pop(0)
+        for w in grafo.listaDeAdjacencias[v]:
+
+            if distancias[v] + w[1] < distancias[w[0]]:
+                fila.append(w[0])
+                distancias[w[0]] = distancias[v] + w[1]
+                precursores[w[0]] = v
+        #ordenar os vertices conforme as distancias da origem
+        fila.sort(key=lambda x: distancias[x])
+
+    return(distancias, precursores)
