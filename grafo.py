@@ -144,3 +144,36 @@ def dijkstra(grafo: Grafo, origem):
         fila.sort(key=lambda x: distancias[x])
 
     return(distancias, precursores)
+
+#executa o algoritmo, e retorna informação de quais
+#arestas foram ignoradas, visitadas mas obsoletas, e usadas definitivamente.
+def dijkstraEmCores(grafo: Grafo, origem):
+    distancias = []
+    precursores = []
+    usoDeArestas = [0] * len(grafo.arestas)
+    for v in range(len(grafo.vertices)):
+        if v == origem:
+            distancias.append(0)
+            precursores.append(None)
+        else:
+            distancias.append(sys.maxsize)
+            precursores.append(None)
+    fila = [origem]
+
+    while len(fila) > 0:
+        v = fila.pop(0)
+        for w in grafo.listaDeAdjacencias[v]:
+
+            if distancias[v] + w[1] < distancias[w[0]]:
+                for e in range(len(grafo.matrizDeIncidencias)):
+                    if (abs(grafo.matrizDeIncidencias[e][v]) == w[1]) and (abs(grafo.matrizDeIncidencias[e][w[0]]) == w[1]):
+                        usoDeArestas[e] = 1
+                        break
+                fila.append(w[0])
+                distancias[w[0]] = distancias[v] + w[1]
+                precursores[w[0]] = v
+        #ordenar os vertices conforme as distancias da origem
+        fila.sort(key=lambda x: distancias[x])
+
+    print(sum(usoDeArestas))
+    return(distancias, precursores, usoDeArestas)

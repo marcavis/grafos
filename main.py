@@ -34,6 +34,20 @@ def relatorioDijkstra(meuGrafo, origem):
         print(backtrack(v, meuGrafo, precursores), end='')
         print()
 
+def relatorioDijkstraEmCores(meuGrafo, origem):
+    distancias, precursores, usoDeArestas = grafo.dijkstraEmCores(meuGrafo, origem)
+    print()
+    print("Distâncias a partir do vértice " + meuGrafo.vertices[origem] + ":")
+    print("***** Distância | Anterior | Caminho Completo")
+    for v in range(len(meuGrafo.vertices)):
+        print('{:>4}'.format(meuGrafo.vertices[v]) + "| ", end='')
+        dist = "∞" if distancias[v] == sys.maxsize else distancias[v]
+        print('{:>9}'.format(dist) + " | ", end='')
+        prec = "--" if precursores[v] == None else meuGrafo.vertices[precursores[v]]
+        print('{:>8}'.format(prec) + " | ", end='')
+        print(backtrack(v, meuGrafo, precursores), end='')
+        print()
+
 def backtrack(vertice: int, meuGrafo, precursores):
     caminho = []
     atual = vertice
@@ -43,9 +57,10 @@ def backtrack(vertice: int, meuGrafo, precursores):
     saida = ''.join([x + " -> " for x in caminho])
     return saida + meuGrafo.vertices[vertice]
 
-a = grafo.Grafo( orientado=True, valorado=True)
-criarVertices(a, 20)
-criarArestas(a, 35)
+
+a = grafo.Grafo(valorado=True)
+criarVertices(a, 50)
+criarArestas(a, 100)
 a.mostraVertices()
 a.mostraListaDeArestas()
 a.mostraListaDeAdjacencias()
@@ -54,7 +69,7 @@ a.mostraMatrizDeIncidencias()
 
 
 for i in range(len(a.vertices)):
-    relatorioDijkstra(a, i)
+    relatorioDijkstraEmCores(a, i)
 
 saida = open('saida.dot', 'w')
 saida.write(a.paraGraphviz())
