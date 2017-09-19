@@ -177,3 +177,56 @@ def dijkstraEmCores(grafo: Grafo, origem):
 
     print(sum(usoDeArestas))
     return(distancias, precursores, usoDeArestas)
+
+def criarVertices(grafo: Grafo, quantidade: int):
+    ultimoVertice = len(grafo.vertices) + 1
+    for i in range(quantidade):
+        grafo.adicionarVertice("V" + str(ultimoVertice + i))
+
+def criarArestas(grafo: Grafo, quantidade):
+    ultimaAresta = len(grafo.arestas) + 1
+    for i in range(quantidade):
+        if grafo.valorado:
+            valor = random.randint(1, 10)
+        else:
+            valor = 1
+        origem = random.randint(0, len(grafo.vertices) - 1)
+        destino = random.randint(0, len(grafo.vertices) - 1)
+        grafo.adicionarAresta("E" + str(ultimaAresta + i), origem, destino, valor)
+
+def relatorioDijkstra(meuGrafo, origem):
+    distancias, precursores = dijkstra(meuGrafo, origem)
+    print()
+    print("Distâncias a partir do vértice " + meuGrafo.vertices[origem] + ":")
+    print("***** Distância | Anterior | Caminho Completo")
+    for v in range(len(meuGrafo.vertices)):
+        print('{:>4}'.format(meuGrafo.vertices[v]) + "| ", end='')
+        dist = "∞" if distancias[v] == sys.maxsize else distancias[v]
+        print('{:>9}'.format(dist) + " | ", end='')
+        prec = "--" if precursores[v] == None else meuGrafo.vertices[precursores[v]]
+        print('{:>8}'.format(prec) + " | ", end='')
+        print(backtrack(v, meuGrafo, precursores), end='')
+        print()
+
+def relatorioDijkstraEmCores(meuGrafo, origem):
+    distancias, precursores, usoDeArestas = dijkstraEmCores(meuGrafo, origem)
+    print()
+    print("Distâncias a partir do vértice " + meuGrafo.vertices[origem] + ":")
+    print("***** Distância | Anterior | Caminho Completo")
+    for v in range(len(meuGrafo.vertices)):
+        print('{:>4}'.format(meuGrafo.vertices[v]) + "| ", end='')
+        dist = "∞" if distancias[v] == sys.maxsize else distancias[v]
+        print('{:>9}'.format(dist) + " | ", end='')
+        prec = "--" if precursores[v] == None else meuGrafo.vertices[precursores[v]]
+        print('{:>8}'.format(prec) + " | ", end='')
+        print(backtrack(v, meuGrafo, precursores), end='')
+        print()
+
+def backtrack(vertice: int, meuGrafo, precursores):
+    caminho = []
+    atual = vertice
+    while precursores[atual] != None:
+        caminho = [meuGrafo.vertices[precursores[atual]]] + caminho
+        atual = precursores[atual]
+    saida = ''.join([x + " -> " for x in caminho])
+    return saida + meuGrafo.vertices[vertice]
