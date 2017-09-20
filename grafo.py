@@ -175,7 +175,6 @@ def dijkstraEmCores(grafo: Grafo, origem):
         #ordenar os vertices conforme as distancias da origem
         fila.sort(key=lambda x: distancias[x])
 
-    print(sum(usoDeArestas))
     return(distancias, precursores, usoDeArestas)
 
 def criarVertices(grafo: Grafo, quantidade: int):
@@ -221,6 +220,40 @@ def relatorioDijkstraEmCores(meuGrafo, origem):
         print('{:>8}'.format(prec) + " | ", end='')
         print(backtrack(v, meuGrafo, precursores), end='')
         print()
+
+    if meuGrafo.orientado:
+        saida = "digraph "
+        seta = " -> "
+    else:
+        saida = "graph "
+        seta = " -- "
+    saida += "\"grafo\" {\nnode [width=1.0,height=1.0];\n"
+    saida += "label=\"Dijkstra a partir do vértice " + meuGrafo.vertices[origem] + "\";\n"
+    saida += "fontsize=32;\n"
+    for v in range(len(meuGrafo.vertices)):
+        saida += "N" + str(v+1) + " [label=\"" + meuGrafo.vertices[v]
+        if v == origem:
+            saida += "\",color=\"blue\",fontcolor=\"blue\","
+        else:
+            dist = "∞" if distancias[v] == sys.maxsize else distancias[v]
+            saida += "\n" + str(dist) + "\""
+            if dist == "∞":
+                saida += "color=\"red\",fontcolor=\"red\","
+            else:
+                saida += "color=\"darkgreen\",fontcolor=\"darkgreen\","
+        saida += "fontsize=24];\n"
+    for a in range(len(meuGrafo.arestas)):
+        saida += "N" + str(meuGrafo.arestas[a][1] + 1) + seta #origem
+        saida += "N" + str(meuGrafo.arestas[a][2] + 1) + " [" #destino
+        if meuGrafo.valorado:
+            saida += "label=" + str(meuGrafo.arestas[a][3]) + ","
+        if usoDeArestas[a] == 1:
+            saida += "color=\"darkgreen\",fontcolor=\"darkgreen\","
+        else:
+            saida += "color=\"red\",fontcolor=\"red\","
+        saida += "weight=1,style=\"setlinewidth(2.0)\",fontsize=20];\n"
+    saida += "}"
+    return saida
 
 def backtrack(vertice: int, meuGrafo, precursores):
     caminho = []
