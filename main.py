@@ -3,6 +3,7 @@
 #representação de grafos
 #Caio Silveira Batista, Marcos Avila Isidoro
 import grafo, random, sys, os, subprocess
+from timeit import default_timer as timer
 
 def visualizacoesDijkstra(a: grafo.Grafo):
     #Apagar todas as visualizações anteriores de grafos de dijkstra
@@ -17,21 +18,38 @@ def visualizacoesDijkstra(a: grafo.Grafo):
         'dijkstra' + a.vertices[i] + '.png'])
         print('Visualização do grafo do vértice ' + a.vertices[i] + ' completa')
 
+#para testar dijkstra
+# a = grafo.Grafo(orientado=True,valorado=True)
+# grafo.criarVertices(a, 20)
+# grafo.criarArestas(a, 45)
+# a.mostraVertices()
+# a.mostraListaDeArestas()
+# a.mostraListaDeAdjacencias()
+# a.mostraMatrizDeAdjacencias()
+# a.mostraMatrizDeIncidencias()
+
+#precisa do programa Dot do Graphviz instalado
+# visualizacoesDijkstra(a)
+
+# for i in range(len(a.vertices)):
+#     grafo.relatorioDijkstra(a, i)
+
 a = grafo.Grafo(orientado=True,valorado=True)
 grafo.criarVertices(a, 20)
-grafo.criarArestas(a, 50)
+grafo.criarArestasSimples(a, 45, -1, 9)
 a.mostraVertices()
 a.mostraListaDeArestas()
 a.mostraListaDeAdjacencias()
 a.mostraMatrizDeAdjacencias()
 a.mostraMatrizDeIncidencias()
 
-#precisa do programa Dot do Graphviz instalado
-#visualizacoesDijkstra(a)
-
-for i in range(len(a.vertices)):
-    grafo.relatorioDijkstra(a, i)
-
 saida = open('saida.dot', 'w')
 saida.write(a.paraGraphviz())
 saida.close()
+
+start = timer()
+for i in range(len(a.vertices)):
+    grafo.relatorioBellmanFord(a, i)
+    #grafo.relatorioDijkstra(a, i)
+end = timer()
+print(end - start)
