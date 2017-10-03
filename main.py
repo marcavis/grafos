@@ -34,9 +34,9 @@ def visualizacoesDijkstra(a: grafo.Grafo):
 # for i in range(len(a.vertices)):
 #     grafo.relatorioDijkstra(a, i)
 
-a = grafo.Grafo(orientado=True,valorado=True)
+a = grafo.Grafo(orientado=False,valorado=True)
 grafo.criarVertices(a, 20)
-grafo.criarArestasSimples(a, 45, -1, 9)
+grafo.criarArestasSimples(a, 45)
 a.mostraVertices()
 a.mostraListaDeArestas()
 a.mostraListaDeAdjacencias()
@@ -47,9 +47,6 @@ saida = open('saida.dot', 'w')
 saida.write(a.paraGraphviz())
 saida.close()
 
-start = timer()
-for i in range(len(a.vertices)):
-    grafo.relatorioBellmanFord(a, i)
-    #grafo.relatorioDijkstra(a, i)
-end = timer()
-print(end - start)
+saida = open('kruskal.dot', 'w')
+saida.write(grafo.relatorioKruskalEmCores(a))
+saida.close()

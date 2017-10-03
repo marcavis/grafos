@@ -6,18 +6,15 @@ import random, sys
 
 
 class Grafo():
-    vertices = []
-    arestas = []
-    listaDeAdjacencias = []
-    matrizDeAdjacencias = [[0]]
-    matrizDeIncidencias = []
-
-    orientado = False
-    valorado = False
 
     def __init__(self, orientado=False, valorado=False):
         self.orientado = orientado
         self.valorado = valorado
+        self.vertices = []
+        self.arestas = []
+        self.listaDeAdjacencias = []
+        self.matrizDeAdjacencias = [[0]]
+        self.matrizDeIncidencias = []
 
     def adicionarVertice(self, nomeDoVertice):
         self.vertices.append(nomeDoVertice)
@@ -53,6 +50,17 @@ class Grafo():
             #na coluna
             colunaNova[destino] -= 1 * valor
         self.matrizDeIncidencias.append(colunaNova)
+
+    def reordenarArestas(self):
+        self.arestas.sort(key=lambda x: int(x[0][1:]))
+
+    #testa apenas para grafos nao orientados
+    def ehConexo(self):
+        if self.orientado:
+            raise Exception("ERRO: GRAFO ORIENTADO")
+        #o teste espera que todos os vertices tenham ao menos uma aresta
+        esperado = len(self.vertices)
+        return sum([1 for x in range(esperado) if len(self.listaDeAdjacencias[x]) > 0]) == esperado
 
     def mostraVertices(self):
         print()
@@ -92,7 +100,7 @@ class Grafo():
         print("Matriz de incidências:")
         cabecalho = "*****"
         for w in range(len(self.matrizDeIncidencias)):
-            cabecalho += " " + '{:>4}'.format("E" + str(w+1))
+            cabecalho += " " + '{:>4}'.format(self.arestas[w][0])
         print(cabecalho)
         for v in range(len(self.vertices)):
             print('{:>4}'.format(self.vertices[v]) + "|", end='')
@@ -327,3 +335,123 @@ def relatorioBellmanFord(meuGrafo, origem):
         print('{:>8}'.format(prec) + " | ", end='')
         print(backtrack(v, meuGrafo, precursores), end='')
         print()
+
+def igualdade(conj1, conj2):
+    return sorted(conj1) == sorted(conj2)
+
+#testa se conj2 está contido em conj1
+def contem(conj1, conj2):
+    for conj in conj1:
+        if igualdade(conj, conj2):
+            return True
+    return False
+
+def uniao(conjunto, *conjuntos):
+    resultado = conjunto[:]
+    for conj in conjuntos:
+        for elem in conj:
+            if elem not in resultado:
+                resultado.append(elem)
+    return resultado
+
+#remove os *conjuntos de conjunto principal
+def diferenca(principal, *conjuntos):
+    resultado = []
+    for conj in principal:
+        if not contem(conjuntos, conj):
+            resultado += [conj]
+    return resultado
+
+def achaConjunto(conjuntos, vertice):
+    for conj in conjuntos:
+        if vertice in conj:
+            return conj
+    return []
+
+def kruskal(meuGrafo: Grafo):
+    if meuGrafo.orientado:
+        raise Exception("ERRO: GRAFO É ORIENTADO")
+    if not meuGrafo.ehConexo():
+        raise Exception("ERRO: GRAFO NÃO É CONEXO")
+    filaDeArestas = meuGrafo.arestas[:]
+    #ordenar a fila de arestas pelo valor
+    filaDeArestas.sort(key= lambda x: x[3])
+    arvore = []
+    vertices = []
+    conjuntos = [[v] for v in range(len(meuGrafo.vertices))]
+    for aresta in filaDeArestas:
+        #poderia testar se foram adicionadas v-1 arestas, mas testar
+        #se existe apenas um conjunto de vértices interligados é equivalente
+        if len(conjuntos) == 1:
+            break
+        conj1 = achaConjunto(conjuntos, aresta[1])
+        conj2 = achaConjunto(conjuntos, aresta[2])
+        if conj1 != conj2:
+            vertices = uniao(vertices, [aresta[1]], [aresta[2]])
+            arvore.append(aresta)
+            conjuntos = diferenca(conjuntos, conj1, conj2)
+            conjuntos.append(uniao(conj1, conj2))
+    return arvore
+
+def custoDaArvore(listaDeArestas):
+    return sum([aresta[3] for aresta in listaDeArestas])
+
+#executa kruskal, e mostra o custo e a matriz de incidências da árvore geradora
+def relatorioKruskal(meuGrafo: Grafo):
+    arvore = kruskal(meuGrafo)
+    custo = custoDaArvore(arvore)
+    novoGrafo = arvoreParaGrafo(meuGrafo, arvore)
+
+    print()
+    print("Custo da árvore geradora:", custo)
+    print("Representações da árvore geradora:", end='')
+    novoGrafo.mostraVertices()
+    novoGrafo.mostraListaDeArestas()
+    novoGrafo.mostraListaDeAdjacencias()
+    novoGrafo.mostraMatrizDeAdjacencias()
+    novoGrafo.mostraMatrizDeIncidencias()
+
+#faz o mesmo que o acima, mas também retorna o código graphviz para visualizar
+#a árvore geradora (arestas verdes) e
+def relatorioKruskalEmCores(meuGrafo: Grafo):
+    arvore = kruskal(meuGrafo)
+    custo = custoDaArvore(arvore)
+    novoGrafo = arvoreParaGrafo(meuGrafo, arvore)
+
+    print()
+    print("Custo da árvore geradora:", custo)
+    print("Representações da árvore geradora:", end='')
+    novoGrafo.mostraVertices()
+    novoGrafo.mostraListaDeArestas()
+    novoGrafo.mostraListaDeAdjacencias()
+    novoGrafo.mostraMatrizDeAdjacencias()
+    novoGrafo.mostraMatrizDeIncidencias()
+
+    saida = "graph "
+    seta = " -- "
+    saida += "\"grafo\" {\nnode [width=1.0,height=1.0];\n"
+    saida += "label=\"Custo da árvore geradora: " + str(custo) + "\";\n"
+    for v in range(len(meuGrafo.vertices)):
+        saida += "N" + str(v+1) + " [label=\"" + meuGrafo.vertices[v]
+        saida += "\",fontsize=24];\n"
+    for a in range(len(meuGrafo.arestas)):
+        saida += "N" + str(meuGrafo.arestas[a][1] + 1) + seta #origem
+        saida += "N" + str(meuGrafo.arestas[a][2] + 1) + " [" #destino
+        if meuGrafo.valorado:
+            saida += "label=" + str(meuGrafo.arestas[a][3]) + ","
+        if meuGrafo.arestas[a] in arvore:
+            saida += "color=\"darkgreen\",fontcolor=\"darkgreen\","
+        else:
+            saida += "color=\"red\",fontcolor=\"red\","
+        saida += "weight=1,style=\"setlinewidth(2.0)\",fontsize=20];\n"
+    saida += "}"
+    return saida
+
+def arvoreParaGrafo(grafoModelo, arvore):
+    novoGrafo = Grafo(grafoModelo.orientado, grafoModelo.valorado)
+    for vertice in grafoModelo.vertices[:]:
+        novoGrafo.adicionarVertice(vertice)
+    for aresta in arvore:
+        novoGrafo.adicionarAresta(aresta[0], aresta[1], aresta[2], aresta[3])
+    novoGrafo.reordenarArestas()
+    return novoGrafo
