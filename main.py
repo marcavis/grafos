@@ -50,3 +50,5 @@ saida.close()
 saida = open('kruskal.dot', 'w')
 saida.write(grafo.relatorioKruskalEmCores(a))
 saida.close()
+
+grafo.primJarnik(a)

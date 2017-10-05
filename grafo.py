@@ -455,3 +455,20 @@ def arvoreParaGrafo(grafoModelo, arvore):
         novoGrafo.adicionarAresta(aresta[0], aresta[1], aresta[2], aresta[3])
     novoGrafo.reordenarArestas()
     return novoGrafo
+
+#versão que não recebe vértice de origem, pois o usuário não tem como ter uma decisão
+#bem-informada de qual vértice pode trazer melhores resultados
+def primJarnik(meuGrafo: Grafo, origem=0):
+    #arvConj = []
+    chave = [sys.maxsize for i in meuGrafo.vertices]
+    pai = [None for i in meuGrafo.vertices]
+    chave[origem] = 0
+    fila = [i for i in range(len(meuGrafo.vertices))]
+    while len(fila) > 0:
+        fila.sort(key=lambda x: chave[x])
+        u = fila.pop(0)
+        for v in meuGrafo.listaDeAdjacencias[u]:
+            if v[0] in fila and v[1] < chave[v[0]]:
+                pai[v[0]] = u
+                chave[v[0]] = v[1]
+    print(chave, sum(chave))
