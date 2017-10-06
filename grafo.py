@@ -54,13 +54,20 @@ class Grafo():
     def reordenarArestas(self):
         self.arestas.sort(key=lambda x: int(x[0][1:]))
 
-    #testa apenas para grafos nao orientados
+    #se existir alguma distância infinita entre quaisquer vértices, o
+    #grafo não é conexo
     def ehConexo(self):
-        if self.orientado:
-            raise Exception("ERRO: GRAFO ORIENTADO")
-        #o teste espera que todos os vertices tenham ao menos uma aresta
-        esperado = len(self.vertices)
-        return sum([1 for x in range(esperado) if len(self.listaDeAdjacencias[x]) > 0]) == esperado
+        for v in range(len(self.vertices)):
+            for distancia in bellmanFord(self, v)[0]:
+                if distancia == sys.maxsize:
+                    return False
+        return True
+
+    def temArestasNegativas(self):
+        for a in self.arestas:
+            if a[3] < 0:
+                return True
+        return False
 
     def mostraVertices(self):
         print()
@@ -164,6 +171,9 @@ def criarArestasSimples(grafo: Grafo, quantidade, valorMinimo = 1, valorMaximo =
         grafo.adicionarAresta("E" + str(ultimaAresta + i), origem, destino, valor)
 
 def dijkstra(grafo: Grafo, origem):
+    if grafo.temArestasNegativas():
+        raise Exception("ERRO: GRAFO TEM ARESTAS NEGATIVAS")
+
     distancias = []
     precursores = []
     for v in range(len(grafo.vertices)):
@@ -191,6 +201,9 @@ def dijkstra(grafo: Grafo, origem):
 #executa o algoritmo, e retorna informação de quais
 #arestas foram ignoradas, visitadas mas obsoletas, e usadas definitivamente.
 def dijkstraEmCores(grafo: Grafo, origem):
+    if grafo.temArestasNegativas():
+        raise Exception("ERRO: GRAFO TEM ARESTAS NEGATIVAS")
+
     distancias = []
     precursores = []
     usoDeArestas = [0] * len(grafo.arestas)
@@ -291,7 +304,20 @@ def backtrack(vertice: int, meuGrafo, precursores):
     saida = ''.join([x + " -> " for x in caminho])
     return saida + meuGrafo.vertices[vertice]
 
+#usado pelo Bellman-Ford em grafos não-orientados
+def duplicarArestas(arestas):
+    resultado = []
+    for a in arestas:
+        resultado.append(a)
+        resultado.append((a[0], a[2], a[1], a[3]))
+    return resultado
+
 def bellmanFord(meuGrafo: Grafo, origem: int):
+    if meuGrafo.orientado:
+        arestasBF = meuGrafo.arestas
+    else:
+        arestasBF = duplicarArestas(meuGrafo.arestas)
+
     distancias = []
     precursores = []
     for v in range(len(meuGrafo.vertices)):
@@ -302,10 +328,9 @@ def bellmanFord(meuGrafo: Grafo, origem: int):
             distancias.append(sys.maxsize)
             precursores.append(None)
 
-
     for iteracao in range(len(meuGrafo.vertices) - 1):
         semMudancas = True
-        for e in meuGrafo.arestas:
+        for e in arestasBF:
             origem, destino, valor = e[1], e[2], e[3]
             if (distancias[origem] + valor < distancias[destino] and
             distancias[origem] != sys.maxsize):
@@ -315,7 +340,7 @@ def bellmanFord(meuGrafo: Grafo, origem: int):
         if semMudancas == True:
             break
 
-    for e in meuGrafo.arestas:
+    for e in arestasBF:
         origem, destino, valor = e[1], e[2], e[3]
         if (distancias[origem] + valor < distancias[destino] and
         distancias[origem] != sys.maxsize):
@@ -336,6 +361,68 @@ def relatorioBellmanFord(meuGrafo, origem):
         print(backtrack(v, meuGrafo, precursores), end='')
         print()
 
+def simplificarGrafo(meuGrafo):
+    novoGrafo = Grafo(meuGrafo.orientado, meuGrafo.valorado)
+    for vertice in meuGrafo.vertices[:]:
+        novoGrafo.adicionarVertice(vertice)
+    incluirAresta = [True for aresta in meuGrafo.arestas]
+    #excluir arestas que são loops
+    for a in range(len(meuGrafo.arestas)):
+        if meuGrafo.arestas[a][1] == meuGrafo.arestas[a][2]:
+            incluirAresta[a] = False
+        for b in range(len(meuGrafo.arestas)):
+            if a != b:
+                if (meuGrafo.arestas[a][1] == meuGrafo.arestas[b][1] and
+                meuGrafo.arestas[a][2] == meuGrafo.arestas[b][2]):
+                    if meuGrafo.arestas[a][3] > meuGrafo.arestas[b][3]:
+                        incluirAresta[a] = False
+
+    for a in range(len(meuGrafo.arestas)):
+        if incluirAresta[a]:
+            aresta = meuGrafo.arestas[a]
+            novoGrafo.adicionarAresta(aresta[0], aresta[1], aresta[2], aresta[3])
+    novoGrafo.reordenarArestas()
+    return novoGrafo
+
+#Como Floyd-Warshall trabalha com a matriz de adjacências, ele deve primeiro
+#excluir as arestas múltiplas e loops
+def floydWarshall(meuGrafo):
+    novoGrafo = simplificarGrafo(meuGrafo)
+    ordem = len(novoGrafo.vertices)
+
+    dist = [[sys.maxsize for x in range(ordem)] for x in range(ordem)]
+    for x in range(ordem):
+        dist[x][x] = 0
+    for a in range(len(novoGrafo.arestas)):
+        origem = novoGrafo.arestas[a][1]
+        destino = novoGrafo.arestas[a][2]
+        dist[origem][destino] = novoGrafo.arestas[a][3]
+        if not meuGrafo.orientado:
+            dist[destino][origem] = novoGrafo.arestas[a][3]
+
+    for k in range(ordem):
+        for i in range(ordem):
+            for j in range(ordem):
+                if dist[i][k] + dist[k][j] < dist[i][j]:
+                    dist[i][j] = dist[i][k] + dist[k][j]
+    return dist
+
+def relatorioFloydWarshall(meuGrafo):
+    distancias = floydWarshall(meuGrafo)
+    print()
+    print("Floyd-Warshall: Matriz de distâncias:")
+    cabecalho = "*****"
+    for w in range(len(meuGrafo.vertices)):
+        cabecalho += " " + '{:>4}'.format(meuGrafo.vertices[w])
+    print(cabecalho)
+    for v in range(len(meuGrafo.vertices)):
+        print('{:>4}'.format(meuGrafo.vertices[v]) + "|", end='')
+        for w in range(len(meuGrafo.vertices)):
+            dist = "∞" if distancias[v][w] == sys.maxsize else distancias[v][w]
+            print (" " + '{:>4}'.format(dist), end='')
+        print()
+
+#funções de conjuntos usadas por Kruskal
 def igualdade(conj1, conj2):
     return sorted(conj1) == sorted(conj2)
 
@@ -353,6 +440,9 @@ def uniao(conjunto, *conjuntos):
             if elem not in resultado:
                 resultado.append(elem)
     return resultado
+
+def interseccao(conjunto, *conjuntos):
+    return [x for x in conjunto if all([x in conj for conj in conjuntos])]
 
 #remove os *conjuntos de conjunto principal
 def diferenca(principal, *conjuntos):
@@ -397,35 +487,39 @@ def custoDaArvore(listaDeArestas):
     return sum([aresta[3] for aresta in listaDeArestas])
 
 #executa kruskal, e mostra o custo e a matriz de incidências da árvore geradora
-def relatorioKruskal(meuGrafo: Grafo):
+def relatorioKruskal(meuGrafo: Grafo, apenasGrafo = False):
     arvore = kruskal(meuGrafo)
     custo = custoDaArvore(arvore)
     novoGrafo = arvoreParaGrafo(meuGrafo, arvore)
 
     print()
-    print("Custo da árvore geradora:", custo)
-    print("Representações da árvore geradora:", end='')
-    novoGrafo.mostraVertices()
-    novoGrafo.mostraListaDeArestas()
-    novoGrafo.mostraListaDeAdjacencias()
-    novoGrafo.mostraMatrizDeAdjacencias()
-    novoGrafo.mostraMatrizDeIncidencias()
+    print("Algoritmo de Kruskal: Custo da árvore geradora:", custo)
+
+    if not apenasGrafo:
+        print("Representações da árvore geradora:", end='')
+        novoGrafo.mostraVertices()
+        novoGrafo.mostraListaDeArestas()
+        novoGrafo.mostraListaDeAdjacencias()
+        novoGrafo.mostraMatrizDeAdjacencias()
+        novoGrafo.mostraMatrizDeIncidencias()
 
 #faz o mesmo que o acima, mas também retorna o código graphviz para visualizar
 #a árvore geradora (arestas verdes) e
-def relatorioKruskalEmCores(meuGrafo: Grafo):
+def relatorioKruskalEmCores(meuGrafo: Grafo, apenasGrafo = False):
     arvore = kruskal(meuGrafo)
     custo = custoDaArvore(arvore)
     novoGrafo = arvoreParaGrafo(meuGrafo, arvore)
 
     print()
-    print("Custo da árvore geradora:", custo)
-    print("Representações da árvore geradora:", end='')
-    novoGrafo.mostraVertices()
-    novoGrafo.mostraListaDeArestas()
-    novoGrafo.mostraListaDeAdjacencias()
-    novoGrafo.mostraMatrizDeAdjacencias()
-    novoGrafo.mostraMatrizDeIncidencias()
+    print("Algoritmo de Kruskal: Custo da árvore geradora:", custo)
+
+    if not apenasGrafo:
+        print("Representações da árvore geradora:", end='')
+        novoGrafo.mostraVertices()
+        novoGrafo.mostraListaDeArestas()
+        novoGrafo.mostraListaDeAdjacencias()
+        novoGrafo.mostraMatrizDeAdjacencias()
+        novoGrafo.mostraMatrizDeIncidencias()
 
     saida = "graph "
     seta = " -- "
@@ -459,16 +553,106 @@ def arvoreParaGrafo(grafoModelo, arvore):
 #versão que não recebe vértice de origem, pois o usuário não tem como ter uma decisão
 #bem-informada de qual vértice pode trazer melhores resultados
 def primJarnik(meuGrafo: Grafo, origem=0):
-    #arvConj = []
+    if meuGrafo.orientado:
+        raise Exception("ERRO: GRAFO É ORIENTADO")
+    if not meuGrafo.ehConexo():
+        raise Exception("ERRO: GRAFO NÃO É CONEXO")
     chave = [sys.maxsize for i in meuGrafo.vertices]
-    pai = [None for i in meuGrafo.vertices]
+    #em vez de salvar o pai de cada vértice, salvar a aresta que contém
+    #o pai e o próprio vértice
+    arestasPai = [None for i in meuGrafo.vertices]
     chave[origem] = 0
     fila = [i for i in range(len(meuGrafo.vertices))]
     while len(fila) > 0:
         fila.sort(key=lambda x: chave[x])
         u = fila.pop(0)
         for v in meuGrafo.listaDeAdjacencias[u]:
+            #arestas na lista de adjacências são uma tupla formada por:
+            #(destino, valor)
             if v[0] in fila and v[1] < chave[v[0]]:
-                pai[v[0]] = u
+                #recria uma aresta como as usadas na lista de arestas, com, nessa ordem:
+                #nome, origem, destino e valor
+                arestasPai[v[0]] = ('E'+str(v[0]), u, v[0], v[1])
                 chave[v[0]] = v[1]
-    print(chave, sum(chave))
+    #como o vértice origem não tem pai, jogar fora a "aresta pai" dele
+    arestasPai = [x for x in arestasPai if x != None]
+    return arestasPai
+
+#executa kruskal, e mostra o custo e a matriz de incidências da árvore geradora
+def relatorioPrimJarnik(meuGrafo: Grafo, apenasGrafo = False):
+    arvore = primJarnik(meuGrafo)
+    custo = custoDaArvore(arvore)
+    novoGrafo = arvoreParaGrafo(meuGrafo, arvore)
+
+    print()
+    print("Algoritmo de Prim-Jarnik: Custo da árvore geradora:", custo)
+
+    if not apenasGrafo:
+        print("Representações da árvore geradora:", end='')
+        novoGrafo.mostraVertices()
+        novoGrafo.mostraListaDeArestas()
+        novoGrafo.mostraListaDeAdjacencias()
+        novoGrafo.mostraMatrizDeAdjacencias()
+        novoGrafo.mostraMatrizDeIncidencias()
+
+#faz o mesmo que o acima, mas também retorna o código graphviz para visualizar
+#a árvore geradora (arestas verdes) e
+def relatorioPrimJarnikEmCores(meuGrafo: Grafo, apenasGrafo = False):
+    arvore = primJarnik(meuGrafo)
+    custo = custoDaArvore(arvore)
+    novoGrafo = arvoreParaGrafo(meuGrafo, arvore)
+
+    print()
+    print("Algoritmo de Prim-Jarnik: Custo da árvore geradora:", custo)
+
+    if not apenasGrafo:
+        print("Representações da árvore geradora:", end='')
+        novoGrafo.mostraVertices()
+        novoGrafo.mostraListaDeArestas()
+        novoGrafo.mostraListaDeAdjacencias()
+        novoGrafo.mostraMatrizDeAdjacencias()
+        novoGrafo.mostraMatrizDeIncidencias()
+
+    saida = "graph "
+    seta = " -- "
+    saida += "\"grafo\" {\nnode [width=1.0,height=1.0];\n"
+    saida += "label=\"Custo da árvore geradora: " + str(custo) + "\";\n"
+    for v in range(len(meuGrafo.vertices)):
+        saida += "N" + str(v+1) + " [label=\"" + meuGrafo.vertices[v]
+        saida += "\",fontsize=24];\n"
+    for a in range(len(meuGrafo.arestas)):
+        saida += "N" + str(meuGrafo.arestas[a][1] + 1) + seta #origem
+        saida += "N" + str(meuGrafo.arestas[a][2] + 1) + " [" #destino
+        if meuGrafo.valorado:
+            saida += "label=" + str(meuGrafo.arestas[a][3]) + ","
+        #como implementado, o prim-jarnik não recria arestas do mesmo jeito
+        #que no grafo original, portanto, procurar também arestas onde os vértices
+        #de origem e destino estejam em ordem oposta
+        if (meuGrafo.arestas[a] in arvore or existeArestaSimilar(meuGrafo.arestas[a], arvore)):
+            saida += "color=\"darkgreen\",fontcolor=\"darkgreen\","
+        else:
+            saida += "color=\"red\",fontcolor=\"red\","
+        saida += "weight=1,style=\"setlinewidth(2.0)\",fontsize=20];\n"
+    saida += "}"
+    return saida
+
+def existeArestaSimilar(aresta, arvore):
+    for a in arvore:
+        #as arestas têm o mesmo valor?
+        if aresta[3] == a[3]:
+            if (aresta[1] == a[1] and aresta[2] == a[2]):
+                return True
+            if (aresta[1] == a[2] and aresta[2] == a[1]):
+                return True
+    return False
+
+def comparacaoArvoresGM(arvore1, arvore2):
+    comparacao = 0
+    for a1 in arvore1:
+        for a2 in arvore2:
+            if a1[3] == a2[3]:
+                if a1[1] == a2[1] and a1[2] == a2[2]:
+                    comparacao += 1
+                if a1[1] == a2[2] and a1[2] == a2[1]:
+                    comparacao += 1
+    return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
