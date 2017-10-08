@@ -19,11 +19,11 @@ def visualizacoesDijkstra(a: grafo.Grafo):
 
 def benchmarkAGM(vertices:int, arestas:int, testes:int):
     clock = timeit.Timer('grafo.kruskal(a)',
-    'import grafo; a = grafo.Grafo(orientado=False,valorado=True);grafo.criarVertices(a, '+str(vertices)+');grafo.criarArestasSimples(a, '+str(arestas)+'); ',).timeit(100)
+    'import grafo; a = grafo.Grafo(orientado=False,valorado=True);grafo.criarVertices(a, '+str(vertices)+');grafo.criarArestasSimples(a, '+str(arestas)+'); ',).timeit(testes)
     print("Kruskal x", testes, ":", clock)
 
     clock = timeit.Timer('grafo.primJarnik(a)',
-    'import grafo; a = grafo.Grafo(orientado=False,valorado=True);grafo.criarVertices(a, '+str(vertices)+');grafo.criarArestas(a, '+str(arestas)+'); ',).timeit(100)
+    'import grafo; a = grafo.Grafo(orientado=False,valorado=True);grafo.criarVertices(a, '+str(vertices)+');grafo.criarArestas(a, '+str(arestas)+'); ',).timeit(testes)
     print("Prim-Jarnik x", testes, ":", clock)
 
 def comparacaoArvores(meuGrafo):
@@ -96,7 +96,8 @@ comparacaoArvores(a)
 
 #print(grafo.floydWarshall(a))
 #teste de velocidade dos algoritmos de árvore geradora mínima
-#benchmarkAGM(300, 1100, 100)
+#benchmarkAGM(vertices, arestas, repeticoes)
+benchmarkAGM(30, 90, 1000)
 
 #comando para gerar todos os grafos graficamente (heh) no Linux
 #dot -Tpng saida.dot > saida.png; dot -Tpng arvorePrimJ.dot > arvorePrimJ.png; dot -Tpng arvoreKruskal.dot > arvoreKruskal.png; dot -Tpng primj.dot >primj.png; dot -Tpng kruskal.dot >kruskal.png; compare kruskal.png primj.png diff.png; eog diff.png
