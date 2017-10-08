@@ -26,16 +26,17 @@ def benchmarkAGM(vertices:int, arestas:int, testes:int):
     'import grafo; a = grafo.Grafo(orientado=False,valorado=True);grafo.criarVertices(a, '+str(vertices)+');grafo.criarArestas(a, '+str(arestas)+'); ',).timeit(100)
     print("Prim-Jarnik x", testes, ":", clock)
 
-def comparacaoArvores():
+def comparacaoArvores(meuGrafo):
     #verificar se Kruskal e Prim-Jarnik acharam a mesma árvore
-    arestasIguais, custoK, custoPJ = grafo.comparacaoArvoresGM(grafo.kruskal(a), grafo.primJarnik(a))
-    if arestasIguais == len(a.vertices) - 1:
+    arestasIguais, custoK, custoPJ = grafo.comparacaoArvoresGM(grafo.kruskal(meuGrafo), grafo.primJarnik(meuGrafo))
+    if arestasIguais == len(meuGrafo.vertices) - 1:
         print("As árvores Geradoras Mínimas são iguais")
     else:
-        diferencas = len(a.vertices) - 1 - arestasIguais
-        print("Foram achadas", diferencas, "arestas diferentes,")
-        print("E Kruskal teve custo", custoK)
-        print("E Prim-Jarnik teve custo", custoPJ)
+        diferencas = len(meuGrafo.vertices) - 1 - arestasIguais
+        print("Foram achadas", diferencas, "arestas diferentes nas árvores geradoras")
+        print("encontradas pelos dois algoritmos.")
+        print("A árvore geradora mínima de Kruskal teve custo", custoK)
+        print("A árvore geradora mínima de Prim-Jarnik teve custo", custoPJ)
 
 #para testar dijkstra
 # a = grafo.Grafo(orientado=True,valorado=True)
@@ -54,9 +55,9 @@ def comparacaoArvores():
 #     grafo.relatorioDijkstra(a, i)
 
 a = grafo.Grafo(orientado=False,valorado=True)
-grafo.criarVertices(a, 300)
-grafo.criarArestas(a, 2000)
-mostrarGrafo = False
+grafo.criarVertices(a, 18)
+grafo.criarArestas(a, 45)
+mostrarGrafo = True
 if mostrarGrafo:
     a.mostraVertices()
     a.mostraListaDeArestas()
@@ -75,7 +76,7 @@ saida.close()
 
 #arestas usadas por Kruskal, desenhadas no grafo original
 saida = open('kruskal.dot', 'w')
-saida.write(grafo.relatorioKruskalEmCores(a, True))
+saida.write(grafo.relatorioKruskalEmCores(a))
 saida.close()
 
 #desenho das arestas usadas por Prim-Jarnik
@@ -85,12 +86,13 @@ saida.close()
 
 #arestas usadas por Prim-Jarnik, desenhadas no grafo original
 saida = open('primj.dot', 'w')
-saida.write(grafo.relatorioPrimJarnikEmCores(a, True))
+saida.write(grafo.relatorioPrimJarnikEmCores(a))
 saida.close()
 
 #grafo.relatorioFloydWarshall(a)
 
-comparacaoArvores()
+#verifica se as árvores geradas por Kruskal e Prim-Jarnik são diferentes
+comparacaoArvores(a)
 
 #print(grafo.floydWarshall(a))
 #teste de velocidade dos algoritmos de árvore geradora mínima
