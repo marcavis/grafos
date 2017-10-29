@@ -97,7 +97,7 @@ comparacaoArvores(a)
 #print(grafo.floydWarshall(a))
 #teste de velocidade dos algoritmos de árvore geradora mínima
 #benchmarkAGM(vertices, arestas, repeticoes)
-benchmarkAGM(30, 90, 1000)
+#benchmarkAGM(30, 90, 1000)
 
 #comando para gerar todos os grafos graficamente (heh) no Linux
 #dot -Tpng saida.dot > saida.png; dot -Tpng arvorePrimJ.dot > arvorePrimJ.png; dot -Tpng arvoreKruskal.dot > arvoreKruskal.png; dot -Tpng primj.dot >primj.png; dot -Tpng kruskal.dot >kruskal.png; compare kruskal.png primj.png diff.png; eog diff.png

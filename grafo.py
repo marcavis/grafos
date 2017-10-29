@@ -54,6 +54,9 @@ class Grafo():
     def reordenarArestas(self):
         self.arestas.sort(key=lambda x: int(x[0][1:]))
 
+    def grau(self, vertice):
+        return len(self.listaDeAdjacencias[vertice])
+
     #se existir alguma distância infinita entre quaisquer vértices, o
     #grafo não é conexo
     def ehConexo(self):
