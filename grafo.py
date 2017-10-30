@@ -57,6 +57,15 @@ class Grafo():
     def grau(self, vertice):
         return len(self.listaDeAdjacencias[vertice])
 
+    def saoAdjacentes(self, v1, v2):
+        for aresta in self.listaDeAdjacencias[v1]:
+            if v2 in aresta:
+                return True
+        for aresta in self.listaDeAdjacencias[v2]:
+            if v1 in aresta:
+                return True
+        return False
+
     #se existir alguma distância infinita entre quaisquer vértices, o
     #grafo não é conexo
     def ehConexo(self):
@@ -659,3 +668,22 @@ def comparacaoArvoresGM(arvore1, arvore2):
                 if a1[1] == a2[2] and a1[2] == a2[1]:
                     comparacao += 1
     return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
+
+def coloracao(meuGrafo, cores=range(3), verticesColoridos=[]):
+    listaDeVertices = list(range(len(meuGrafo.vertices)))
+    print(listaDeVertices)
+    #listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
+    #começam todos sem cor, normalmente
+    if verticesColoridos == []:
+        verticesColoridos = [[v, None] for v in listaDeVertices]
+    print(verticesColoridos)
+    for cor in cores:
+        print(verticesColoridos)
+        verticesDestaCor = []
+        for vc in verticesColoridos:
+            #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
+            print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
+            if (vc[1] == None and not (any([meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro]))):
+                verticesDestaCor.append(vc[0])
+                vc[1] = cor
+                print(vc[0], cor)
