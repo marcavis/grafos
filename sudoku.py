@@ -74,4 +74,4 @@ saida = open('saida.dot', 'w')
 saida.write(t.grafo.paraGraphviz())
 saida.close()
 
-lib_grafo.coloracao(t.grafo)
+lib_grafo.coloracaoSudoku(t.grafo)

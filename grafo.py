@@ -59,10 +59,10 @@ class Grafo():
 
     def saoAdjacentes(self, v1, v2):
         for aresta in self.listaDeAdjacencias[v1]:
-            if v2 in aresta:
+            if v2 == aresta[0]:
                 return True
         for aresta in self.listaDeAdjacencias[v2]:
-            if v1 in aresta:
+            if v1 == aresta[0]:
                 return True
         return False
 
@@ -669,21 +669,75 @@ def comparacaoArvoresGM(arvore1, arvore2):
                     comparacao += 1
     return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
 
-def coloracao(meuGrafo, cores=range(3), verticesColoridos=[]):
+def coloracao(meuGrafo, cores=range(10), verticesColoridos=[]):
     listaDeVertices = list(range(len(meuGrafo.vertices)))
-    print(listaDeVertices)
-    #listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
+    #print(listaDeVertices)
+    listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
     #começam todos sem cor, normalmente
     if verticesColoridos == []:
         verticesColoridos = [[v, None] for v in listaDeVertices]
-    print(verticesColoridos)
     for cor in cores:
-        print(verticesColoridos)
         verticesDestaCor = []
         for vc in verticesColoridos:
             #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
-            print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
-            if (vc[1] == None and not (any([meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro]))):
-                verticesDestaCor.append(vc[0])
-                vc[1] = cor
-                print(vc[0], cor)
+            #print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
+            if vc[1] == None:
+                #for vc2 in verticesDestaCor:
+                #print('hh',vc, [[vc2, vc==vc2] for vc2 in verticesDestaCor])
+                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in verticesDestaCor]):
+                    vc[1] = cor
+                    verticesDestaCor.append(vc)
+                    #print(vc)
+    mostraSaidaColoracao(verticesColoridos)
+
+def coloracao(meuGrafo, cores=range(15), verticesColoridos=[]):
+    listaDeVertices = list(range(len(meuGrafo.vertices)))
+    #print(listaDeVertices)
+    listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
+    #começam todos sem cor, normalmente
+    if verticesColoridos == []:
+        verticesColoridos = [[v, None] for v in listaDeVertices]
+    for cor in cores:
+        verticesDestaCor = []
+        for vc in verticesColoridos:
+            #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
+            #print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
+            if vc[1] == None:
+                #for vc2 in verticesDestaCor:
+                #print('hh',vc, [[vc2, vc==vc2] for vc2 in verticesDestaCor])
+                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in verticesDestaCor]):
+                    vc[1] = cor
+                    verticesDestaCor.append(vc)
+                    #print(vc)
+    mostraSaidaColoracao(verticesColoridos)
+
+def coloracaoSudoku(meuGrafo, cores=range(15), verticesColoridos=[]):
+    listaDeVertices = list(range(len(meuGrafo.vertices)))
+    #print(listaDeVertices)
+    listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
+    #começam todos sem cor, normalmente
+    if verticesColoridos == []:
+        verticesColoridos = [[v, None] for v in listaDeVertices]
+    for cor in cores:
+        verticesDestaCor = []
+        for vc in verticesColoridos:
+            #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
+            #print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
+            if vc[1] == None:
+                #for vc2 in verticesDestaCor:
+                #print('hh',vc, [[vc2, vc==vc2] for vc2 in verticesDestaCor])
+                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in verticesDestaCor]):
+                    vc[1] = cor
+                    verticesDestaCor.append(vc)
+                    #print(vc)
+        print(len(verticesDestaCor), cor)
+    mostraSaidaColoracao(verticesColoridos)
+
+def mostraSaidaColoracao(verticesColoridos):
+    for line in range(9):
+        for col in range(9):
+            saida = verticesColoridos[line*9+col][1]
+            if saida == None:
+                saida = 'X'
+            print(saida,end=' ')
+        print()
