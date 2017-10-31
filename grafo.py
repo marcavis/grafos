@@ -690,54 +690,33 @@ def coloracao(meuGrafo, cores=range(10), verticesColoridos=[]):
                     #print(vc)
     mostraSaidaColoracao(verticesColoridos)
 
-def coloracao(meuGrafo, cores=range(15), verticesColoridos=[]):
+def coloracao(meuGrafo, cores=range(1,15), verticesColoridos=[]):
     listaDeVertices = list(range(len(meuGrafo.vertices)))
-    #print(listaDeVertices)
-    listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
     #começam todos sem cor, normalmente
     if verticesColoridos == []:
         verticesColoridos = [[v, None] for v in listaDeVertices]
+    verticesColoridos.sort(key = lambda x: meuGrafo.grau(x[0]))
+    print('antes da coloração:')
+    mostraSaidaColoracao(verticesColoridos)
+    print()
     for cor in cores:
-        verticesDestaCor = []
         for vc in verticesColoridos:
             #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
-            #print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
             if vc[1] == None:
-                #for vc2 in verticesDestaCor:
-                #print('hh',vc, [[vc2, vc==vc2] for vc2 in verticesDestaCor])
-                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in verticesDestaCor]):
+                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in [v for v in verticesColoridos if v[1] == cor]]):
                     vc[1] = cor
-                    verticesDestaCor.append(vc)
                     #print(vc)
+    print('após coloração:')
     mostraSaidaColoracao(verticesColoridos)
 
-def coloracaoSudoku(meuGrafo, cores=range(15), verticesColoridos=[]):
-    listaDeVertices = list(range(len(meuGrafo.vertices)))
-    #print(listaDeVertices)
-    listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
-    #começam todos sem cor, normalmente
-    if verticesColoridos == []:
-        verticesColoridos = [[v, None] for v in listaDeVertices]
-    for cor in cores:
-        verticesDestaCor = []
-        for vc in verticesColoridos:
-            #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
-            #print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
-            if vc[1] == None:
-                #for vc2 in verticesDestaCor:
-                #print('hh',vc, [[vc2, vc==vc2] for vc2 in verticesDestaCor])
-                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in verticesDestaCor]):
-                    vc[1] = cor
-                    verticesDestaCor.append(vc)
-                    #print(vc)
-        print(len(verticesDestaCor), cor)
-    mostraSaidaColoracao(verticesColoridos)
+def coloracaoSudoku(meuGrafo, cores=range(1,15), verticesColoridos=[]):
+    coloracao(meuGrafo, cores, verticesColoridos)
 
 def mostraSaidaColoracao(verticesColoridos):
     for line in range(9):
         for col in range(9):
-            saida = verticesColoridos[line*9+col][1]
-            if saida == None:
-                saida = 'X'
-            print(saida,end=' ')
+            cor = verticesColoridos[line*9+col][1]
+            if cor == None:
+                cor = '_'
+            print('{:>2}'.format(cor),end=' ')
         print()
