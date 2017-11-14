@@ -19,7 +19,7 @@ def main():
 	subprocess.check_output(['convert', 'provinces.bmp', 'provinces-temp.png'])
 	provMap = scipy.misc.imread('provinces-temp.png')
 	colorMap = {}
-	for line in range(1900, len(provMap)-1):
+	for line in range(1, len(provMap)-1):
 		print(line)
 		#if line%50 == 0:
 		#	print("line", line, "of", len(provMap))
@@ -42,13 +42,15 @@ def main():
 
 	#i = 1
 	for x in range(len(meuGrafo.vertices)):
-		print(x)
 		if meuGrafo.grau(x) > 0:
 			saida += "N" + str(provincias[x][0]) + " [label=\""+provincias[x][4]+"\",fontsize=10];\n"
 			print(provincias[x][4])
 		else:
 			print(provincias[x][0])
 
+	graus = [(meuGrafo.vertices[x], meuGrafo.grau(x)) for x in range(len(meuGrafo.vertices))]
+	graus.sort(key=lambda x: x[1])
+	print(graus[-1])
 	for aresta in meuGrafo.arestas:
 		#print(len(edge[0]), len(edge[1]))
 		saida += "N"+str(aresta[1])+ " -- N"
