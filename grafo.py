@@ -669,7 +669,7 @@ def comparacaoArvoresGM(arvore1, arvore2):
                     comparacao += 1
     return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
 
-def coloracao(meuGrafo, cores=range(1,15), verticesColoridos=[]):
+def coloracao(meuGrafo, cores=range(0,15), verticesColoridos=[]):
     listaDeVertices = list(range(len(meuGrafo.vertices)))
     #começam todos sem cor, normalmente
     if verticesColoridos == []:

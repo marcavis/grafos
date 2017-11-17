@@ -2,14 +2,15 @@
 # -*- coding: utf-8 -*-
 import codecs, sys, re, subprocess, scipy.misc, numpy, random
 import grafo
-from PIL import Image
 
 def main():
 	meuGrafo = grafo.Grafo()
 
 	saida = ""
+
 	provincias = codecs.open("definition.csv", encoding="latin_1").readlines()
 	provincias = [x.strip().split(";") for x in provincias[1:]]
+	dicionarioDeCores = {(int(x[1]),int(x[2]),int(x[3])): int(x[0]) for x in provincias }
 	#simpleProvList = []
 	for p in provincias:
 		meuGrafo.adicionarVertice(p[4])
@@ -23,14 +24,15 @@ def main():
 	colorMap = {}
 	pixelsDeFronteira = [[False] * len(provMap[0]) for y in provMap]
 	donoDoPixel = [[-1] * len(provMap[0]) for y in provMap]
-	print(len(pixelsDeFronteira), len(pixelsDeFronteira[0]))
 	for linha in range(1, len(provMap)-1):
 		if linha%50 == 0:
 			print("linha", linha, "de", len(provMap))
 		for col in range(1, len(provMap[0])-1):
 			pixel1 = provMap[linha][col]
 			pixel1 = [int(x) for x in pixel1[:3]]
-			pais1 = findProv(pixel1, provincias)
+			pais1 = findProv(pixel1, dicionarioDeCores)
+			#corrigir um erro off-by-one, já que as províncias começam de 1
+			pais1 = pais1 - 1
 			donoDoPixel[linha][col] = pais1
 			for n in doisVizinhos(linha, col):
 				if numpy.any(provMap[linha][col] != provMap[n[0], n[1]]):
@@ -41,7 +43,9 @@ def main():
 					pixel2 = provMap[n[0]][n[1]]
 					pixelsDeFronteira[n[0]][n[1]] = True
 					pixel2 = [int(x) for x in pixel2[:3]]
-					pais2 = findProv(pixel2, provincias)
+					pais2 = findProv(pixel2, dicionarioDeCores)
+					#corrigir um erro off-by-one, já que as províncias começam de 1
+					pais2 = pais2 - 1
 					#wastes = ["686", "687","688","689","690","691","692","693","694"]
 					if meuGrafo.matrizDeAdjacencias[pais1][pais2] == 0:
 						meuGrafo.adicionarAresta('x', pais1, pais2)
@@ -71,9 +75,7 @@ def main():
 	subprocess.check_output(['rm', 'provinces-temp.png'])
 	coloracoes = grafo.coloracao(meuGrafo)
 	coloracoes.sort(key=lambda x: x[0])
-	for c in coloracoes:
-		print(c)
-	cores = [[200,0,0],[0,200,0],[0,0,200],[200,200,0],[200,0,200],[0,200,200],
+	cores = [[220,150,100],[100,220,150],[100,150,220],[130,130,40],[130,40,130],[40,130,130],
 			[100,0,0],[0,100,0],[0,0,100],[100,100,0],[100,0,100],[0,100,100]]
 
 	novoMapa = provMap[:]
@@ -84,14 +86,11 @@ def main():
 			else:
 				cor = coloracoes[donoDoPixel[linha][col]][1]
 				novoMapa[linha][col] = cores[cor]
-	#im = Image.fromarray(novoMapa)
 	scipy.misc.imsave("provinces-novo.png", novoMapa)
 
-def findProv(color, provList):
-	for p in range(len(provList)):
-		if color[0] == int(provList[p][1]) and color[1] == int(provList[p][2]) and \
-		color[2] == int(provList[p][3]):
-			return p
+def findProv(color, dicionario):
+	colorTuple = (color[0], color[1], color[2])
+	return dicionario[colorTuple]
 
 def distance(x, y):
 	return((x[0]-y[0])**2 + (x[1]-y[1])**2)
