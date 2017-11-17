@@ -669,50 +669,24 @@ def comparacaoArvoresGM(arvore1, arvore2):
                     comparacao += 1
     return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
 
-def coloracao(meuGrafo, cores=range(10), verticesColoridos=[]):
-    listaDeVertices = list(range(len(meuGrafo.vertices)))
-    #print(listaDeVertices)
-    listaDeVertices.sort(key = lambda x: meuGrafo.grau(x))
-    #começam todos sem cor, normalmente
-    if verticesColoridos == []:
-        verticesColoridos = [[v, None] for v in listaDeVertices]
-    for cor in cores:
-        verticesDestaCor = []
-        for vc in verticesColoridos:
-            #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
-            #print(verticesDestaCor, vc, vc[1] == None, [meuGrafo.saoAdjacentes(vc[0], outro) for outro in verticesDestaCor if vc[0] != outro], meuGrafo.grau(vc[0]))
-            if vc[1] == None:
-                #for vc2 in verticesDestaCor:
-                #print('hh',vc, [[vc2, vc==vc2] for vc2 in verticesDestaCor])
-                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in verticesDestaCor]):
-                    vc[1] = cor
-                    verticesDestaCor.append(vc)
-                    #print(vc)
-    mostraSaidaColoracao(verticesColoridos)
-
 def coloracao(meuGrafo, cores=range(1,15), verticesColoridos=[]):
     listaDeVertices = list(range(len(meuGrafo.vertices)))
     #começam todos sem cor, normalmente
     if verticesColoridos == []:
         verticesColoridos = [[v, None] for v in listaDeVertices]
-    verticesColoridos.sort(key = lambda x: meuGrafo.grau(x[0]))
-    print('antes da coloração:')
-    mostraSaidaColoracao(verticesColoridos)
-    print()
+    verticesColoridos.sort(key = lambda x: meuGrafo.grau(x[0]), reverse=True)
     for cor in cores:
         for vc in verticesColoridos:
             #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
             if vc[1] == None:
                 if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in [v for v in verticesColoridos if v[1] == cor]]):
                     vc[1] = cor
-                    #print(vc)
-    print('após coloração:')
-    mostraSaidaColoracao(verticesColoridos)
+    return verticesColoridos
 
-def coloracaoSudoku(meuGrafo, cores=range(1,15), verticesColoridos=[]):
-    coloracao(meuGrafo, cores, verticesColoridos)
 
-def mostraSaidaColoracao(verticesColoridos):
+
+
+def mostraSaidaColoracaoSudoku(verticesColoridos):
     for line in range(9):
         for col in range(9):
             cor = verticesColoridos[line*9+col][1]
