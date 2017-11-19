@@ -24,7 +24,10 @@ def main():
 	#simpleProvList = []
 	meuGrafo.adicionarVertice("Corrigir-erro-de-off-by-one")
 	for p in range(len(provincias)):
-		meuGrafo.adicionarVertice(nomesDasProvincias[p])
+		if p in nomesDasProvincias:
+			meuGrafo.adicionarVertice(nomesDasProvincias[p])
+		else:
+			meuGrafo.adicionarVertice("Sem Nome")
 
 	saida += "graph \"grafo\" {\nnode [width=0.5,height=0.5];\n"
 
