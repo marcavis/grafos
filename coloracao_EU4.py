@@ -1,12 +1,41 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-import codecs, sys, re, subprocess, scipy.misc, numpy, random
+import codecs, sys, re, os, subprocess, scipy.misc, numpy, random
 import grafo
 
 def main():
 	meuGrafo = grafo.Grafo()
 
 	saida = ""
+
+	tagsDosPaises = {}
+	arquivoTagsDosPaises = codecs.open("../common/country_tags/00_countries.txt", encoding="latin_1").readlines()
+	for linha in arquivoTagsDosPaises:
+		if "=" in linha and "#" not in linha.split("=")[0]:
+			novaEntrada = linha.split("=")
+			nomeDoArquivo = novaEntrada[1].split("#")[0].replace('"',' ').strip()
+			tagsDosPaises[novaEntrada[0].strip()] = nomeDoArquivo
+
+	arqCoresDosPaises = {f.replace("-"," ").split(" ")[0].strip(): f for f in os.listdir("../common/countries/")}
+	coresDosPaises = {}
+	for tag in tagsDosPaises:
+		arquivo = codecs.open("../common/" + tagsDosPaises[tag], encoding="latin_1").readlines()
+		for linha in arquivo:
+			if "color" in linha:
+				coresDosPaises[tag] = [int(x) for x in linha.split() if x.isdigit()]
+
+	historicoDasProvincias = {int(f.replace("-"," ").split(" ")[0].strip()): f for f in os.listdir("../history/provinces/")}
+	donoDasProvincias = {}
+
+	print(historicoDasProvincias, max(historicoDasProvincias.keys()))
+	return
+	for arq in range(1, max(historicoDasProvincias.keys()) + 1):
+		if arq in historicoDasProvincias.keys():
+			arquivo = codecs.open("../history/provinces/"+historicoDasProvincias[arq], encoding="latin_1").readlines()
+			for linha in arquivo:
+				if "owner" == linha[0:5]:
+					donoDasProvincias[arq] = linha.split("#")[0].split("=")[1].strip()
+					break
 
 	arqNomesDasProvincias = codecs.open("../localisation/prov_names_l_english.yml", encoding="utf-8").readlines()
 	nomesDasProvincias = {}
