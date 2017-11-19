@@ -16,13 +16,14 @@ def main():
 			nomeDoArquivo = novaEntrada[1].split("#")[0].replace('"',' ').strip()
 			tagsDosPaises[novaEntrada[0].strip()] = nomeDoArquivo
 
-	# arqCoresDosPaises = {f.replace("-"," ").split(" ")[0].strip(): f for f in os.listdir("../common/countries/")}
-	# coresDosPaises = {}
-	# for tag in tagsDosPaises:
-	# 	arquivo = codecs.open("../common/" + tagsDosPaises[tag], encoding="latin_1").readlines()
-	# 	for linha in arquivo:
-	# 		if "color" in linha:
-	# 			coresDosPaises[tag] = [int(x) for x in linha.split() if x.isdigit()]
+	arqCoresDosPaises = {f.replace("-"," ").split(" ")[0].strip(): f for f in os.listdir("../common/countries/")}
+	coresDosPaises = {}
+	for tag in tagsDosPaises:
+		arquivo = codecs.open("../common/" + tagsDosPaises[tag], encoding="latin_1").readlines()
+		for linha in arquivo:
+			if "color" == linha[:5]:
+				coresDosPaises[tag] = [int(x) for x in linha.replace("{"," ").replace("}"," ").split() if x.isdigit()]
+
 
 	historicoDasProvincias = {int(f.replace("-"," ").split(" ")[0].strip()): f for f in os.listdir("../history/provinces/")}
 	donoDasProvincias = {}
@@ -166,10 +167,11 @@ def main():
 			elif donoDoPixel[linha][col] in tiposDeProvincias['impassable']:
 				novoMapa[linha][col] = [143, 143, 143]
 			elif donoDoPixel[linha][col] in donoDasProvincias.keys():
-				#cor = coloracoes[donoDoPixel[linha][col]][1]
 				cor = coloracoes[indiceDosPaises[donoDasProvincias[donoDoPixel[linha][col]]]]
-				#print(linha, col, cor)
+				corOriginal = coresDosPaises[donoDasProvincias[donoDoPixel[linha][col]]]
 				novoMapa[linha][col] = cores[cor]
+				#descomente para pintar com a cor original de cada país
+				#novoMapa[linha][col] = corOriginal
 			else:
 				novoMapa[linha][col] = [143, 143, 143]
 	scipy.misc.imsave("provinces-novo.png", novoMapa)
