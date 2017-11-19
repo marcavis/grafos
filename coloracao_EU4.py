@@ -10,17 +10,19 @@ def main():
 
 	arqNomesDasProvincias = codecs.open("../localisation/prov_names_l_english.yml", encoding="utf-8").readlines()
 	nomesDasProvincias = {}
-	nomesDasProvincias[0] = "Corrigir-erro-de-off-by-one"
+	#nomesDasProvincias[0] = "Corrigir-erro-de-off-by-one"
 	for linha in arqNomesDasProvincias:
 		if "PROV" in linha:
 			linhaAtual = linha.replace(" PROV", "")
+			linhaAtual = re.sub(":\d",":", linhaAtual)
 			linhaAtual = linhaAtual.split(":")
 			nome = linhaAtual[1].strip().strip('"')
 			nomesDasProvincias[int(linhaAtual[0])] = nome
 
+	#print(nomesDasProvincias)
 	provincias = codecs.open("definition.csv", encoding="latin_1").readlines()
 	provincias = [x.strip().split(";") for x in provincias[1:]]
-	dicionarioDeCores = {(int(x[1]),int(x[2]),int(x[3])): int(x[0]) for x in provincias }
+	dicionarioDeCores = {(int(x[1]),int(x[2]),int(x[3])): int(x[0]) for x in provincias}
 	#simpleProvList = []
 	meuGrafo.adicionarVertice("Corrigir-erro-de-off-by-one")
 	for p in range(len(provincias)):
@@ -74,7 +76,9 @@ def main():
 					ehOcupavel(pais2, tiposDeProvincias) and \
 					meuGrafo.matrizDeAdjacencias[pais1][pais2] == 0):
 						meuGrafo.adicionarAresta('x', pais1, pais2)
-						print("encontrada fronteira de", meuGrafo.vertices[pais1], "para", meuGrafo.vertices[pais2])
+						#print(pais1, pais2)
+						print("encontrada fronteira de", meuGrafo.vertices[pais1+1], "para", meuGrafo.vertices[pais2+1])
+						#print(meuGrafo.arestas)
 
 
 	#funções para fazer um grafo; melhor não para esse caso, é muito grande
@@ -98,8 +102,9 @@ def main():
 		f.close()
 
 	subprocess.check_output(['rm', 'provinces-temp.png'])
+	#coloracoes = grafo.coloracao(meuGrafo)
 	coloracoes = grafo.coloracao(meuGrafo)
-	coloracoes.sort(key=lambda x: x[0])
+	#coloracoes.sort(key=lambda x: x[0])
 	cores = [[220,50,50],[50,220,50],[230,40,230],[230,230,40],[250,150,50],[40,40,130],
 			[100,0,0],[0,100,0],[0,0,100],[100,100,0],[100,0,100],[0,100,100]]
 
@@ -121,14 +126,17 @@ def main():
 			elif donoDoPixel[linha][col] in tiposDeProvincias['impassable']:
 				novoMapa[linha][col] = [143, 143, 143]
 			else:
-				cor = coloracoes[donoDoPixel[linha][col]][1]
+				#cor = coloracoes[donoDoPixel[linha][col]][1]
+				cor = coloracoes[donoDoPixel[linha][col]]
+				#print(linha, col, cor)
 				novoMapa[linha][col] = cores[cor]
 	scipy.misc.imsave("provinces-novo.png", novoMapa)
 
 	contagemDeCores=[0]*12
 	for num_prov in range(1, len(coloracoes)):
 		if ehOcupavel(num_prov, tiposDeProvincias):
-			contagemDeCores[coloracoes[num_prov][1]] += 1
+			#contagemDeCores[coloracoes[num_prov][1]] += 1
+			contagemDeCores[coloracoes[num_prov]] += 1
 	for num_cor in range(len(contagemDeCores)):
 		print("Cor", num_cor, ":", contagemDeCores[num_cor], "províncias")
 #lê o conteúdo de uma tag dentro de um arquivo; por exemplo,

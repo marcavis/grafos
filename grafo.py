@@ -57,6 +57,10 @@ class Grafo():
     def grau(self, vertice):
         return len(self.listaDeAdjacencias[vertice])
 
+    def adjacentesDe(self, vertice):
+        return [x[0] for x in self.listaDeAdjacencias[vertice]]
+
+
     def saoAdjacentes(self, v1, v2):
         for aresta in self.listaDeAdjacencias[v1]:
             if v2 == aresta[0]:
@@ -669,22 +673,29 @@ def comparacaoArvoresGM(arvore1, arvore2):
                     comparacao += 1
     return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
 
-def coloracao(meuGrafo, cores=range(0,15), verticesColoridos=[]):
-    listaDeVertices = list(range(len(meuGrafo.vertices)))
+def coloracao(meuGrafo, cores=range(0,15)):
+    indices = list(range(len(meuGrafo.vertices)))
     #começam todos sem cor, normalmente
-    if verticesColoridos == []:
-        verticesColoridos = [[v, None] for v in listaDeVertices]
-    verticesColoridos.sort(key = lambda x: meuGrafo.grau(x[0]), reverse=True)
+    verticesColoridos = {v: None for v in indices}
+    indices.sort(key = lambda x: meuGrafo.grau(x), reverse=True)
     for cor in cores:
-        for vc in verticesColoridos:
+        for vc in indices:
             #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
-            if vc[1] == None:
-                if not any([meuGrafo.saoAdjacentes(vc[0], vc2[0]) for vc2 in [v for v in verticesColoridos if v[1] == cor]]):
-                    vc[1] = cor
+            if verticesColoridos[vc] == None:
+                if not any([cor == verticesColoridos[vc2] for vc2 in meuGrafo.adjacentesDe(vc)]):
+                    verticesColoridos[vc] = cor
     return verticesColoridos
 
-
-
+def coloracao2(meuGrafo, cores=range(0,15)):
+    listaDeVertices = list(range(len(meuGrafo.vertices)))
+    #começam todos sem cor, normalmente
+    verticesColoridos = {v: None for v in listaDeVertices}
+    for vertice in verticesColoridos.keys():
+        for cor in cores:
+            if not any([cor == verticesColoridos[vc2] for vc2 in meuGrafo.adjacentesDe(vertice)]):
+                verticesColoridos[vertice] = cor
+                break
+    return verticesColoridos
 
 def mostraSaidaColoracaoSudoku(verticesColoridos):
     for line in range(9):
