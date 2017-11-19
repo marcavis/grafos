@@ -16,19 +16,18 @@ def main():
 			nomeDoArquivo = novaEntrada[1].split("#")[0].replace('"',' ').strip()
 			tagsDosPaises[novaEntrada[0].strip()] = nomeDoArquivo
 
-	arqCoresDosPaises = {f.replace("-"," ").split(" ")[0].strip(): f for f in os.listdir("../common/countries/")}
-	coresDosPaises = {}
-	for tag in tagsDosPaises:
-		arquivo = codecs.open("../common/" + tagsDosPaises[tag], encoding="latin_1").readlines()
-		for linha in arquivo:
-			if "color" in linha:
-				coresDosPaises[tag] = [int(x) for x in linha.split() if x.isdigit()]
+	# arqCoresDosPaises = {f.replace("-"," ").split(" ")[0].strip(): f for f in os.listdir("../common/countries/")}
+	# coresDosPaises = {}
+	# for tag in tagsDosPaises:
+	# 	arquivo = codecs.open("../common/" + tagsDosPaises[tag], encoding="latin_1").readlines()
+	# 	for linha in arquivo:
+	# 		if "color" in linha:
+	# 			coresDosPaises[tag] = [int(x) for x in linha.split() if x.isdigit()]
 
 	historicoDasProvincias = {int(f.replace("-"," ").split(" ")[0].strip()): f for f in os.listdir("../history/provinces/")}
 	donoDasProvincias = {}
 
-	print(historicoDasProvincias, max(historicoDasProvincias.keys()))
-	return
+
 	for arq in range(1, max(historicoDasProvincias.keys()) + 1):
 		if arq in historicoDasProvincias.keys():
 			arquivo = codecs.open("../history/provinces/"+historicoDasProvincias[arq], encoding="latin_1").readlines()
@@ -53,12 +52,12 @@ def main():
 	provincias = [x.strip().split(";") for x in provincias[1:]]
 	dicionarioDeCores = {(int(x[1]),int(x[2]),int(x[3])): int(x[0]) for x in provincias}
 	#simpleProvList = []
-	meuGrafo.adicionarVertice("Corrigir-erro-de-off-by-one")
-	for p in range(len(provincias)):
-		if p in nomesDasProvincias:
-			meuGrafo.adicionarVertice(nomesDasProvincias[p])
-		else:
-			meuGrafo.adicionarVertice("Sem Nome")
+	indiceDosPaises = {}
+	indice = 0
+	for p in tagsDosPaises.keys():
+		meuGrafo.adicionarVertice(p)
+		indiceDosPaises[p] = indice
+		indice += 1
 
 	saida += "graph \"grafo\" {\nnode [width=0.5,height=0.5];\n"
 
@@ -66,7 +65,7 @@ def main():
 	provMap = scipy.misc.imread('provinces-temp.png')
 
 	colorMap = {}
-	pixelsDeFronteira = [[False] * len(provMap[0]) for y in provMap]
+	pixelsDeFronteira = [[0] * len(provMap[0]) for y in provMap]
 	donoDoPixel = [[-1] * len(provMap[0]) for y in provMap]
 
 	#ler vários arquivos que informam quais províncias não são terra ocupável
@@ -84,30 +83,40 @@ def main():
 		for col in range(1, len(provMap[0])-1):
 			pixel1 = provMap[linha][col]
 			pixel1 = [int(x) for x in pixel1[:3]]
-			pais1 = findProv(pixel1, dicionarioDeCores)
-			#acho que... corrigir um erro off-by-one, já que as províncias começam de 1
-			#pais1 = pais1 - 1
-			donoDoPixel[linha][col] = pais1
+			prov1 = findProv(pixel1, dicionarioDeCores)
+
+			if prov1 in donoDasProvincias.keys():
+				pais1 = donoDasProvincias[prov1]
+			else:
+				pais1 = None
+			donoDoPixel[linha][col] = prov1
 			for n in doisVizinhos(linha, col):
 				if numpy.any(provMap[linha][col] != provMap[n[0], n[1]]):
 
-					#no final, pinter o pixel e o vizinho de preto
-					pixelsDeFronteira[linha][col] = True
-
 					pixel2 = provMap[n[0]][n[1]]
-					pixelsDeFronteira[n[0]][n[1]] = True
-					pixel2 = [int(x) for x in pixel2[:3]]
-					pais2 = findProv(pixel2, dicionarioDeCores)
-					#corrigir um erro off-by-one, já que as províncias começam de 1
-					#pais2 = pais2 - 1
 
-					if (ehOcupavel(pais1, tiposDeProvincias) and \
-					ehOcupavel(pais2, tiposDeProvincias) and \
-					meuGrafo.matrizDeAdjacencias[pais1][pais2] == 0):
-						meuGrafo.adicionarAresta('x', pais1, pais2)
-						#print(pais1, pais2)
-						print("encontrada fronteira de", meuGrafo.vertices[pais1+1], "para", meuGrafo.vertices[pais2+1])
-						#print(meuGrafo.arestas)
+					pixel2 = [int(x) for x in pixel2[:3]]
+					prov2 = findProv(pixel2, dicionarioDeCores)
+
+					if prov2 in donoDasProvincias.keys():
+						pais2 = donoDasProvincias[prov2]
+					else:
+						pais2 = None
+
+					if pais1 == pais2:
+						pixelsDeFronteira[linha][col] = 1
+						pixelsDeFronteira[n[0]][n[1]] = 1
+					else:
+						pixelsDeFronteira[linha][col] = 2
+						pixelsDeFronteira[n[0]][n[1]] = 2
+
+					if (pais1 != None and pais2 != None and pais1 != pais2):
+						id1 = indiceDosPaises[pais1]
+						id2 = indiceDosPaises[pais2]
+						if meuGrafo.matrizDeAdjacencias[id1][id2] == 0:
+							meuGrafo.adicionarAresta('x', id1, id2)
+							#print(pais1, pais2)
+							print("encontrada fronteira de", nomesDasProvincias[prov1], "em", pais1 ,"para", nomesDasProvincias[prov2], "em", pais2)
 
 
 	#funções para fazer um grafo; melhor não para esse caso, é muito grande
@@ -146,28 +155,32 @@ def main():
 			if (linha == 0 or col == 0 or \
 			linha == len(provMap) - 1 or col == len(provMap[0]) - 1):
 				novoMapa[linha][col] = [0, 0, 0]
-			elif pixelsDeFronteira[linha][col]:
+			elif pixelsDeFronteira[linha][col] == 2:
 				novoMapa[linha][col] = [0, 0, 0]
+			elif pixelsDeFronteira[linha][col] == 1:
+				novoMapa[linha][col] = [100, 100, 100]
 			elif donoDoPixel[linha][col] in tiposDeProvincias['lakes']:
 				novoMapa[linha][col] = [160, 200, 250]
 			elif donoDoPixel[linha][col] in tiposDeProvincias['sea_starts']:
 				novoMapa[linha][col] = [160, 200, 250]
 			elif donoDoPixel[linha][col] in tiposDeProvincias['impassable']:
 				novoMapa[linha][col] = [143, 143, 143]
-			else:
+			elif donoDoPixel[linha][col] in donoDasProvincias.keys():
 				#cor = coloracoes[donoDoPixel[linha][col]][1]
-				cor = coloracoes[donoDoPixel[linha][col]]
+				cor = coloracoes[indiceDosPaises[donoDasProvincias[donoDoPixel[linha][col]]]]
 				#print(linha, col, cor)
 				novoMapa[linha][col] = cores[cor]
+			else:
+				novoMapa[linha][col] = [143, 143, 143]
 	scipy.misc.imsave("provinces-novo.png", novoMapa)
 
-	contagemDeCores=[0]*12
-	for num_prov in range(1, len(coloracoes)):
-		if ehOcupavel(num_prov, tiposDeProvincias):
-			#contagemDeCores[coloracoes[num_prov][1]] += 1
-			contagemDeCores[coloracoes[num_prov]] += 1
-	for num_cor in range(len(contagemDeCores)):
-		print("Cor", num_cor, ":", contagemDeCores[num_cor], "províncias")
+	# contagemDeCores=[0]*12
+	# for num_prov in range(1, len(coloracoes)):
+	# 	if ehOcupavel(num_prov, tiposDeProvincias):
+	# 		#contagemDeCores[coloracoes[num_prov][1]] += 1
+	# 		contagemDeCores[indiceDosPaises[donoDasProvincias[coloracoes[num_prov]]]] += 1
+	# for num_cor in range(len(contagemDeCores)):
+	# 	print("Cor", num_cor, ":", contagemDeCores[num_cor], "províncias")
 #lê o conteúdo de uma tag dentro de um arquivo; por exemplo,
 #lerGrupo(sea_starts, arquivo) onde arquivo tem sea_starts = { 1 2 3 }
 #retorna [1, 2, 3]
