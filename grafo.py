@@ -673,6 +673,7 @@ def comparacaoArvoresGM(arvore1, arvore2):
                     comparacao += 1
     return comparacao, custoDaArvore(arvore1), custoDaArvore(arvore2)
 
+#welsh-powell
 def coloracao(meuGrafo, cores=range(0,15)):
     indices = list(range(len(meuGrafo.vertices)))
     #começam todos sem cor, normalmente
@@ -686,6 +687,7 @@ def coloracao(meuGrafo, cores=range(0,15)):
                     verticesColoridos[vc] = cor
     return verticesColoridos
 
+#greedy
 def coloracao2(meuGrafo, cores=range(0,15)):
     listaDeVertices = list(range(len(meuGrafo.vertices)))
     #começam todos sem cor, normalmente
@@ -696,6 +698,35 @@ def coloracao2(meuGrafo, cores=range(0,15)):
                 verticesColoridos[vertice] = cor
                 break
     return verticesColoridos
+
+#testa várias vezes, mas ordem aleatória provavelmente nunca vai ser melhor
+def coloracao3(meuGrafo, cores=range(0,15)):
+    indices = list(range(len(meuGrafo.vertices)))
+    #começam todos sem cor, normalmente
+    melhorResultado = {}
+    ultimoCoresDemais = 0
+    indices.sort(key = lambda x: meuGrafo.grau(x), reverse=True)
+    for vez in range(10):
+        verticesColoridos = {v: None for v in indices}
+        coresDemais = 0
+        for cor in cores:
+            for vc in indices:
+                #se o vértice estiver sem cor e nenhum dos vértices da mesma cor for adjacente...
+                if verticesColoridos[vc] == None:
+                    if not any([cor == verticesColoridos[vc2] for vc2 in meuGrafo.adjacentesDe(vc)]):
+                        verticesColoridos[vc] = cor
+                        if cor > 3:
+                            coresDemais += 1
+        print("tentativa", vez, ":", coresDemais, "colorações além da 4ª cor")
+        if (vez == 0 or coresDemais < ultimoCoresDemais):
+            melhorResultado = verticesColoridos
+            ultimoCoresDemais = coresDemais
+            print("resultado melhor que o anterior!")
+            if coresDemais == 0:
+                #já conseguimos sucesso!
+                return melhorResultado
+        random.shuffle(indices)
+    return melhorResultado
 
 def mostraSaidaColoracaoSudoku(verticesColoridos):
     for line in range(9):
