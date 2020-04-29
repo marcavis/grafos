@@ -55,9 +55,24 @@ def comparacaoArvores(meuGrafo):
 #     grafo.relatorioDijkstra(a, i)
 
 a = grafo.Grafo(orientado=False,valorado=True)
-grafo.criarVertices(a, 18)
-grafo.criarArestas(a, 45)
+grafo.criarVertices(a, 8)
+#grafo.criarArestas(a, 45)
+a.adicionarAresta("E1", 0, 1, 3)
+a.adicionarAresta("E2", 0, 2, 2)
+a.adicionarAresta("E3", 0, 3, 6)
+a.adicionarAresta("E4", 1, 3, 2)
+a.adicionarAresta("E5", 1, 5, 7)
+a.adicionarAresta("E6", 2, 3, 1)
+a.adicionarAresta("E7", 2, 5, 9)
+a.adicionarAresta("E8", 3, 4, 6)
+a.adicionarAresta("E9", 3, 5, 7)
+a.adicionarAresta("E10", 3, 6, 6)
+a.adicionarAresta("E11", 3, 7, 8)
+a.adicionarAresta("E12", 4, 7, 7)
+a.adicionarAresta("E13", 5, 6, 3)
+a.adicionarAresta("E14", 6, 7, 1)
 mostrarGrafo = True
+
 if mostrarGrafo:
     a.mostraVertices()
     a.mostraListaDeArestas()
